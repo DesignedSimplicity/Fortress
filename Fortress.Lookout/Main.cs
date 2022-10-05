@@ -23,7 +23,7 @@ namespace Fortress.Lookout
 {
 	public partial class Main : Form
 	{
-		private ConcurrentBag<PatrolFile> _fileCache;
+		private ConcurrentDictionary<string, PatrolFile> _fileCache;
 		private Dictionary<string, TreeNode> _nodeCache;
 		private Progress<PatrolFolderState> _progressFolders;
 		private Progress<PatrolFileState> _progressFiles;
@@ -39,7 +39,7 @@ namespace Fortress.Lookout
 			txtStart.Text = @"G:\Others";
 
 
-			_fileCache = new ConcurrentBag<PatrolFile>();
+			_fileCache = new ConcurrentDictionary<string, PatrolFile>();
 			_nodeCache = new Dictionary<string, TreeNode>();
 			_progressFolders = new Progress<PatrolFolderState>();
 			_progressFiles = new Progress<PatrolFileState>();
@@ -73,9 +73,18 @@ namespace Fortress.Lookout
 
 				// populate listview
 				listView.BeginUpdate();
-				foreach (var file in _fileCache.Where(x => String.Equals(PathUtils.GetParentPath(x.Uri), uri, StringComparison.InvariantCultureIgnoreCase)).OrderBy(x => x.Name))
+				foreach (var file in _fileCache.Values.Where(x => String.Equals(PathUtils.GetParentPath(x.Uri), uri, StringComparison.InvariantCultureIgnoreCase)).OrderBy(x => x.Name))
 				{
-					listView.Items.Add(file.Name);
+					var item = listView.Items.Add(file.Name);
+					switch (file.Status)
+					{
+						case PatrolFileStatus.Exception:
+							item.ForeColor = Color.DarkRed; break;
+						case PatrolFileStatus.NotFound:
+							item.ForeColor = Color.DarkOrange; break;
+						case PatrolFileStatus.Verified:
+							item.ForeColor = Color.DarkGreen; break;
+					}
 				}
 				listView.Enabled = true;
 				listView.EndUpdate();
@@ -88,7 +97,8 @@ namespace Fortress.Lookout
 
 		private void FileProgress_ProgressChanged(object? sender, PatrolFileState e)
 		{
-			_fileCache.Add(e.File);
+			var file = _fileCache.AddOrUpdate(e.File.Uri.ToLowerInvariant(), e.File, (string s, PatrolFile f) => e.File);
+			file.Status = e.Status;
 			lblStatus.Text = $"Loading file #{_fileCache.Count} {e.File.Uri}";
 		}
 
@@ -125,6 +135,10 @@ namespace Fortress.Lookout
 			//_fileCache = 
 			await _queryFiles.LoadFilesAsync(uri, true, _cancel.Token);
 			lblStatus.Text = $"Loaded {_fileCache.Count} files from {uri}";
+
+			var hashFiles = new HashFiles(_progressFiles);
+			await hashFiles.HashAllFilesAsync(_fileCache.Values.OrderBy(x => x.Uri).ToList(), _cancel.Token);
+			lblStatus.Text = $"Hashed {_fileCache.Count} files from {uri}";
 		}
 
 		private void Stop_Click(object? sender, EventArgs e)

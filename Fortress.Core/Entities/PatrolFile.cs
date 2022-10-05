@@ -12,6 +12,7 @@ namespace Fortress.Core.Entities
 		public FileInfo? File { get; set; }
 		public string Uri { get; set; }
 		public string Name { get; set; }
+		public PatrolFileStatus Status { get; set; } = PatrolFileStatus.Default;
 
 		public PatrolFile(FileInfo file)
 		{
