@@ -11,41 +11,39 @@ namespace Fortress.Core.Services
 
 	public class QueryFiles
 	{
+		private IProgress<PatrolFileState>? _progress;
 		/*
 		public delegate void FileStateChange(PatrolFileState state);
 
-		private IProgress<PatrolFolderState>? _progress;
 		private FolderStateChange? _change;
 
 		private int _folderCount { get; set; }
 		private readonly ConcurrentQueue<DirectoryInfo> _folderQueue = new ConcurrentQueue<DirectoryInfo>();
 		private readonly ConcurrentBag<Task> _tasks = new ConcurrentBag<Task>();
 
-		public QueryFolders(IProgress<PatrolFolderState> progress)
-		{
-			_progress = progress;
-		}
-
 		public QueryFolders(FolderStateChange progress)
 		{
 			_change = progress;
 		}
 		*/
-		public QueryFiles() { }
+		public QueryFiles(IProgress<PatrolFileState> progress)
+		{
+			_progress = progress;
+		}
 
-		public async Task<List<PatrolFile>> LoadFilesAsync(string uri, CancellationToken? token = null)
+		public async Task<List<PatrolFile>> LoadFilesAsync(string uri, bool recursive = false, CancellationToken? token = null)
 		{
 			return await Task.Run(() => {
-				return LoadFiles(uri, token);
+				return LoadFiles(uri, recursive, token);
 			});
 
 		}
 
-		public List<PatrolFile> LoadFiles(string uri, CancellationToken? token = null)
+		public List<PatrolFile> LoadFiles(string uri, bool recursive = false, CancellationToken? token = null)
 		{
 			var list = new List<PatrolFile>();
 			
-			foreach (var f in Directory.EnumerateFiles(uri, "*.*", new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = false }))
+			foreach (var f in Directory.EnumerateFiles(uri, "*.*", new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = recursive }))
 			{
 				// cancellation returns empty list
 				if (token?.IsCancellationRequested ?? false) return new List<PatrolFile>();
@@ -54,9 +52,9 @@ namespace Fortress.Core.Services
 				var state = new PatrolFileState(file, PatrolFileStatus.Exists);
 				list.Add(file);
 
-				Thread.Sleep(100);
+				Thread.Sleep(1);
 
-				//_progress?.Report(state);
+				_progress?.Report(state);
 				//_change?.Invoke(state);
 			}
 

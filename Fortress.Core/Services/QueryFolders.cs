@@ -56,7 +56,7 @@ namespace Fortress.Core.Services
 				var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
 				list.Add(folder);
 				
-				Thread.Sleep(200);
+				Thread.Sleep(1);
 
 				_progress?.Report(state);
 				_change?.Invoke(state);

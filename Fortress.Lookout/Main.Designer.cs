@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
 			this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
@@ -40,6 +41,7 @@
 			this.txtStart = new System.Windows.Forms.ToolStripTextBox();
 			this.cmdStart = new System.Windows.Forms.ToolStripButton();
 			this.cmdStop = new System.Windows.Forms.ToolStripButton();
+			this.patrolFileBindingSource = new System.Windows.Forms.BindingSource(this.components);
 			this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
 			this.toolStripContainer1.ContentPanel.SuspendLayout();
 			this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -53,6 +55,7 @@
 			this.splitContainer2.Panel1.SuspendLayout();
 			this.splitContainer2.SuspendLayout();
 			this.toolStrip1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.patrolFileBindingSource)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// toolStripContainer1
@@ -112,6 +115,8 @@
 			// treeView
 			// 
 			this.treeView.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.treeView.FullRowSelect = true;
+			this.treeView.HideSelection = false;
 			this.treeView.Location = new System.Drawing.Point(0, 0);
 			this.treeView.Name = "treeView";
 			this.treeView.Size = new System.Drawing.Size(328, 612);
@@ -150,7 +155,7 @@
             this.cmdStop});
 			this.toolStrip1.Location = new System.Drawing.Point(3, 0);
 			this.toolStrip1.Name = "toolStrip1";
-			this.toolStrip1.Size = new System.Drawing.Size(265, 27);
+			this.toolStrip1.Size = new System.Drawing.Size(234, 27);
 			this.toolStrip1.TabIndex = 0;
 			// 
 			// txtStart
@@ -174,12 +179,17 @@
 			this.cmdStop.Size = new System.Drawing.Size(60, 24);
 			this.cmdStop.Text = "Stop";
 			// 
+			// patrolFileBindingSource
+			// 
+			this.patrolFileBindingSource.DataSource = typeof(Fortress.Core.Entities.PatrolFile);
+			// 
 			// Main
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(984, 661);
 			this.Controls.Add(this.toolStripContainer1);
+			this.DoubleBuffered = true;
 			this.Name = "Main";
 			this.Text = "Main";
 			this.toolStripContainer1.BottomToolStripPanel.ResumeLayout(false);
@@ -200,6 +210,7 @@
 			this.splitContainer2.ResumeLayout(false);
 			this.toolStrip1.ResumeLayout(false);
 			this.toolStrip1.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.patrolFileBindingSource)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -217,5 +228,6 @@
 		private StatusStrip statusStrip1;
 		private ToolStripStatusLabel lblStatus;
 		private ToolStripButton cmdStop;
+		private BindingSource patrolFileBindingSource;
 	}
 }
