@@ -27,6 +27,7 @@ namespace Fortress.Lookout
 		private Dictionary<string, TreeNode> _nodeCache;
 		private Progress<PatrolFolderState> _progressFolders;
 		private Progress<PatrolFileState> _progressFiles;
+		private Progress<PatrolFileState> _progressHash;
 		private CancellationTokenSource _cancel;
 		private QueryFolders _queryFolders;
 		private QueryFiles _queryFiles;
@@ -43,6 +44,7 @@ namespace Fortress.Lookout
 			_nodeCache = new Dictionary<string, TreeNode>();
 			_progressFolders = new Progress<PatrolFolderState>();
 			_progressFiles = new Progress<PatrolFileState>();
+			_progressHash = new Progress<PatrolFileState>();
 			_queryFolders = new QueryFolders(_progressFolders);
 			_queryFiles = new QueryFiles(_progressFiles);
 			_cancel = new CancellationTokenSource();
@@ -56,6 +58,7 @@ namespace Fortress.Lookout
 
 			_progressFolders.ProgressChanged += FolderProgress_ProgressChanged;
 			_progressFiles.ProgressChanged += FileProgress_ProgressChanged;
+			_progressHash.ProgressChanged += HashProgress_ProgressChanged;
 		}
 
 		private void TreeView_AfterSelect(object? sender, TreeViewEventArgs e)
@@ -82,6 +85,10 @@ namespace Fortress.Lookout
 							item.ForeColor = Color.DarkRed; break;
 						case PatrolFileStatus.NotFound:
 							item.ForeColor = Color.DarkOrange; break;
+						case PatrolFileStatus.Matched:
+							item.ForeColor = Color.DarkMagenta; break;
+						case PatrolFileStatus.Hashed:
+							item.ForeColor = Color.DarkCyan; break;
 						case PatrolFileStatus.Verified:
 							item.ForeColor = Color.DarkGreen; break;
 					}
@@ -93,6 +100,13 @@ namespace Fortress.Lookout
 
 		private void TreeView_BeforeSelect(object? sender, TreeViewCancelEventArgs e)
 		{			
+		}
+
+		private void HashProgress_ProgressChanged(object? sender, PatrolFileState e)
+		{
+			var file = _fileCache.AddOrUpdate(e.File.Uri.ToLowerInvariant(), e.File, (string s, PatrolFile f) => e.File);
+			file.Status = e.Status;
+			lblStatus.Text = $"Hashing file {e.File.Uri}";
 		}
 
 		private void FileProgress_ProgressChanged(object? sender, PatrolFileState e)
@@ -136,7 +150,7 @@ namespace Fortress.Lookout
 			await _queryFiles.LoadFilesAsync(uri, true, _cancel.Token);
 			lblStatus.Text = $"Loaded {_fileCache.Count} files from {uri}";
 
-			var hashFiles = new HashFiles(_progressFiles);
+			var hashFiles = new HashFiles(_progressHash);
 			await hashFiles.HashAllFilesAsync(_fileCache.Values.OrderBy(x => x.Uri).ToList(), _cancel.Token);
 			lblStatus.Text = $"Hashed {_fileCache.Count} files from {uri}";
 		}

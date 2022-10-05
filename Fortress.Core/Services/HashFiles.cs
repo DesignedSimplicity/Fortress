@@ -46,8 +46,6 @@ namespace Fortress.Core.Services
 				// cancellation returns empty list
 				if (token?.IsCancellationRequested ?? false) return new List<PatrolFile>();
 
-				Thread.Sleep(1000);
-
 				var state = new PatrolFileState(f, PatrolFileStatus.Hashed);
 				if (f.Name.StartsWith("a", StringComparison.OrdinalIgnoreCase))
 				{
@@ -56,6 +54,14 @@ namespace Fortress.Core.Services
 				else if (f.Name.StartsWith("e", StringComparison.OrdinalIgnoreCase))
 				{
 					state.Status = PatrolFileStatus.Exception;
+				}
+				else if (f.Name.StartsWith("m", StringComparison.OrdinalIgnoreCase))
+				{
+					state.Status = PatrolFileStatus.Matched;
+				}
+				else if (f.Name.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+				{
+					state.Status = PatrolFileStatus.Verified;
 				}
 				f.Status = state.Status;
 
