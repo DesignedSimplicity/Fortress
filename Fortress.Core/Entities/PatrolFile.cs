@@ -7,31 +7,31 @@ using System.Threading.Tasks;
 
 namespace Fortress.Core.Entities
 {
-
-	public class PatrolFolder
+	public class PatrolFile
 	{
-		public DirectoryInfo? Directory { get; set; }
+		public FileInfo? File { get; set; }
 		public string Uri { get; set; }
 		public string Name { get; set; }
 
-		public PatrolFolder(DirectoryInfo dir)
+		public PatrolFile(FileInfo file)
 		{
-			Uri = dir.FullName;
-			Name = dir.Name;
-			Directory = dir;
+			Uri = file.FullName;
+			Name = file.Name;
+			File = file;
 		}
 
-		public PatrolFolder(string uri)
+		public PatrolFile(string uri)
 		{
 			Uri = uri;
-			Name = PathUtils.GetParentName(uri);
+			Name = Path.GetFileName(uri);
 		}
 	}
 
-	public enum PatrolFolderStatus
+
+	public enum PatrolFileStatus
 	{
 		/// <summary>
-		/// Error accessing folder
+		/// Error accessing file
 		/// </summary>
 		Exception = -9,
 
@@ -51,32 +51,42 @@ namespace Fortress.Core.Entities
 		Exists = 1,
 
 		/// <summary>
-		/// All contents recursively verifed
+		/// File name and size matched
+		/// </summary>
+		Matched = 2,
+
+		/// <summary>
+		/// File hash created
+		/// </summary>
+		Hashed = 3,
+
+		/// <summary>
+		/// File hash verified
 		/// </summary>
 		Verified = 9,
 	}
 
-	public class PatrolFolderState
+	public class PatrolFileState
 	{
-		public PatrolFolder Folder { get; set; }
+		public PatrolFile File { get; set; }
 		public Guid StateId { get; set; } = Guid.NewGuid();
-		public PatrolFolderStatus Status { get; set; } = PatrolFolderStatus.Default;
+		public PatrolFileStatus Status { get; set; } = PatrolFileStatus.Default;
 		public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 		public string Message { get; set; } = string.Empty;
 		public Exception? Exception { get; set; } = null;
 
 
-		public PatrolFolderState(PatrolFolder folder, PatrolFolderStatus status = PatrolFolderStatus.Default, string message = "")
+		public PatrolFileState(PatrolFile file, PatrolFileStatus status = PatrolFileStatus.Default, string message = "")
 		{
-			Folder = folder;
+			File = file;
 			Status = status;
 			Message = message;
 		}
 
-		public PatrolFolderState(PatrolFolder folder, Exception ex)
+		public PatrolFileState(PatrolFile file, Exception ex)
 		{
-			Folder = folder;
-			Status = PatrolFolderStatus.Exception;
+			File = file;
+			Status = PatrolFileStatus.Exception;
 			Message = ex.Message;
 		}
 	}

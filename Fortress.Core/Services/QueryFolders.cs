@@ -30,15 +30,15 @@ namespace Fortress.Core.Services
 			_change = progress;
 		}
 
-		public async Task<List<PatrolFolder>> LoadAllFoldersAsync(string uri, bool recursive = false, CancellationToken? token = null)
+		public async Task<List<PatrolFolder>> LoadAllFoldersAsync(string uri, CancellationToken? token = null)
 		{
 			return await Task.Run(() => {
-				return LoadAllFolders(uri, recursive, token);
+				return LoadAllFolders(uri, token);
 			});
 
 		}
 
-		public List<PatrolFolder> LoadAllFolders(string uri, bool recursive = false, CancellationToken? token = null)
+		public List<PatrolFolder> LoadAllFolders(string uri, CancellationToken? token = null)
 		{
 			var list = new List<PatrolFolder>();
 			
@@ -48,10 +48,8 @@ namespace Fortress.Core.Services
 			
 			while (dirs.Any())
 			{
-				if (token?.IsCancellationRequested??false)
-				{
-					return list;
-				}
+				// cancellation returns empty list
+				if (token?.IsCancellationRequested ?? false) return new List<PatrolFolder>();
 
 				var dir = dirs.Dequeue();
 				var folder = new PatrolFolder(dir);
@@ -63,9 +61,9 @@ namespace Fortress.Core.Services
 				_progress?.Report(state);
 				_change?.Invoke(state);
 
-				foreach (var s in Directory.EnumerateDirectories(dir, "*", new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = recursive }))
+				foreach (var f in Directory.EnumerateDirectories(dir, "*", new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = false }))
 				{
-					dirs.Enqueue(s);
+					dirs.Enqueue(f);
 				}
 			}
 

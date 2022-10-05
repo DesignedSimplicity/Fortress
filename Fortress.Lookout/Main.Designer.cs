@@ -30,6 +30,8 @@
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
 			this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
+			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+			this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
 			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
 			this.treeView = new System.Windows.Forms.TreeView();
 			this.splitContainer2 = new System.Windows.Forms.SplitContainer();
@@ -37,12 +39,12 @@
 			this.toolStrip1 = new System.Windows.Forms.ToolStrip();
 			this.txtStart = new System.Windows.Forms.ToolStripTextBox();
 			this.cmdStart = new System.Windows.Forms.ToolStripButton();
-			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-			this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
+			this.cmdStop = new System.Windows.Forms.ToolStripButton();
 			this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
 			this.toolStripContainer1.ContentPanel.SuspendLayout();
 			this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
 			this.toolStripContainer1.SuspendLayout();
+			this.statusStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
 			this.splitContainer1.Panel1.SuspendLayout();
 			this.splitContainer1.Panel2.SuspendLayout();
@@ -51,7 +53,6 @@
 			this.splitContainer2.Panel1.SuspendLayout();
 			this.splitContainer2.SuspendLayout();
 			this.toolStrip1.SuspendLayout();
-			this.statusStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// toolStripContainer1
@@ -75,6 +76,21 @@
 			// toolStripContainer1.TopToolStripPanel
 			// 
 			this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.toolStrip1);
+			// 
+			// statusStrip1
+			// 
+			this.statusStrip1.Dock = System.Windows.Forms.DockStyle.None;
+			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.lblStatus});
+			this.statusStrip1.Location = new System.Drawing.Point(0, 0);
+			this.statusStrip1.Name = "statusStrip1";
+			this.statusStrip1.Size = new System.Drawing.Size(984, 22);
+			this.statusStrip1.TabIndex = 0;
+			// 
+			// lblStatus
+			// 
+			this.lblStatus.Name = "lblStatus";
+			this.lblStatus.Size = new System.Drawing.Size(0, 17);
 			// 
 			// splitContainer1
 			// 
@@ -130,10 +146,11 @@
 			this.toolStrip1.Dock = System.Windows.Forms.DockStyle.None;
 			this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.txtStart,
-            this.cmdStart});
+            this.cmdStart,
+            this.cmdStop});
 			this.toolStrip1.Location = new System.Drawing.Point(3, 0);
 			this.toolStrip1.Name = "toolStrip1";
-			this.toolStrip1.Size = new System.Drawing.Size(137, 27);
+			this.toolStrip1.Size = new System.Drawing.Size(265, 27);
 			this.toolStrip1.TabIndex = 0;
 			// 
 			// txtStart
@@ -143,28 +160,19 @@
 			// 
 			// cmdStart
 			// 
-			this.cmdStart.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
 			this.cmdStart.Image = ((System.Drawing.Image)(resources.GetObject("cmdStart.Image")));
 			this.cmdStart.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.cmdStart.Name = "cmdStart";
-			this.cmdStart.Size = new System.Drawing.Size(23, 24);
-			this.cmdStart.Text = "toolStripButton1";
-			this.cmdStart.Click += new System.EventHandler(this.cmdStart_Click);
+			this.cmdStart.Size = new System.Drawing.Size(60, 24);
+			this.cmdStart.Text = "Start";
 			// 
-			// statusStrip1
+			// cmdStop
 			// 
-			this.statusStrip1.Dock = System.Windows.Forms.DockStyle.None;
-			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.lblStatus});
-			this.statusStrip1.Location = new System.Drawing.Point(0, 0);
-			this.statusStrip1.Name = "statusStrip1";
-			this.statusStrip1.Size = new System.Drawing.Size(984, 22);
-			this.statusStrip1.TabIndex = 0;
-			// 
-			// lblStatus
-			// 
-			this.lblStatus.Name = "lblStatus";
-			this.lblStatus.Size = new System.Drawing.Size(0, 17);
+			this.cmdStop.Image = ((System.Drawing.Image)(resources.GetObject("cmdStop.Image")));
+			this.cmdStop.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.cmdStop.Name = "cmdStop";
+			this.cmdStop.Size = new System.Drawing.Size(60, 24);
+			this.cmdStop.Text = "Stop";
 			// 
 			// Main
 			// 
@@ -181,6 +189,8 @@
 			this.toolStripContainer1.TopToolStripPanel.PerformLayout();
 			this.toolStripContainer1.ResumeLayout(false);
 			this.toolStripContainer1.PerformLayout();
+			this.statusStrip1.ResumeLayout(false);
+			this.statusStrip1.PerformLayout();
 			this.splitContainer1.Panel1.ResumeLayout(false);
 			this.splitContainer1.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
@@ -190,8 +200,6 @@
 			this.splitContainer2.ResumeLayout(false);
 			this.toolStrip1.ResumeLayout(false);
 			this.toolStrip1.PerformLayout();
-			this.statusStrip1.ResumeLayout(false);
-			this.statusStrip1.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
@@ -208,5 +216,6 @@
 		private ListView listView;
 		private StatusStrip statusStrip1;
 		private ToolStripStatusLabel lblStatus;
+		private ToolStripButton cmdStop;
 	}
 }

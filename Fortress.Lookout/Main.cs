@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Windows.Forms.AxHost;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 
@@ -21,61 +22,115 @@ namespace Fortress.Lookout
 {
 	public partial class Main : Form
 	{
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
-		private Progress<PatrolFolderState> _folderProgress;
-		private QueryFolders _query;
-		private Dictionary<string, TreeNode> _nodes = new Dictionary<string, TreeNode>();
+		private Dictionary<string, TreeNode> _nodeCache;
+		private Dictionary<string, List<PatrolFile>> _fileCache;
+		private Progress<PatrolFolderState> _progressFolders;
+		private CancellationTokenSource _cancelFolders;
+		private CancellationTokenSource _cancelFiles;
+		private QueryFolders _queryFolders;
+		private QueryFiles _queryFiles;
 
 		public Main()
 		{
 			InitializeComponent();
 
+			cmdStop.Enabled = false;
 			txtStart.Text = @"G:\Others";
 
-			_folderProgress = new Progress<PatrolFolderState>();
-			_query = new QueryFolders(_folderProgress);
+			_nodeCache = new Dictionary<string, TreeNode>();
+			_fileCache = new Dictionary<string, List<PatrolFile>>();
+			_progressFolders = new Progress<PatrolFolderState>();
+			_cancelFolders = new CancellationTokenSource();
+			_cancelFiles = new CancellationTokenSource();
+			_queryFolders = new QueryFolders(_progressFolders);
+			_queryFiles = new QueryFiles();
 
-			/*
-			_background.WorkerReportsProgress = true;
-			_background.DoWork += (object? sender, DoWorkEventArgs e) =>
-			{
-				
-			};
-			_background.ProgressChanged += (object? sender, ProgressChangedEventArgs e) =>
-			{
-				PatrolFolder? folder = e.UserState as PatrolFolder;
-				treeView.Nodes.Add(folder?.Name??"");
-			};
-			*/
 
-			_folderProgress.ProgressChanged += (s, state) =>
-			{
-				var node = new TreeNode(state.Folder.Name);
-				_nodes.Add(state.Folder.Uri.ToLowerInvariant(), node);
-				var directory = PathUtils.GetParentPath(state.Folder.Uri).ToLowerInvariant();
-				if (_nodes.ContainsKey(directory))
-					_nodes[directory].Nodes.Add(node);
-				else
-					treeView.Nodes.Add(node);
+			_progressFolders.ProgressChanged += FolderProgress_ProgressChanged;
 
-				lblStatus.Text = $"Loading folder #{_nodes.Count} {state.Folder.Uri}";
-			};
+			cmdStart.Click += Start_Click;
+			cmdStop.Click += Stop_Click;
+
+			treeView.BeforeSelect += TreeView_BeforeSelect;
+			treeView.AfterSelect += TreeView_AfterSelect;
 		}
 
-		private async void cmdStart_Click(object sender, EventArgs e)
+		private void TreeView_AfterSelect(object? sender, TreeViewEventArgs e)
 		{
-			if (!txtStart.Enabled)
+		}
+
+		private async void TreeView_BeforeSelect(object? sender, TreeViewCancelEventArgs e)
+		{
+			var selectedNode = e.Node;
+			var uri = selectedNode?.Tag.ToString();
+			if (!String.IsNullOrEmpty(uri))
 			{
-				_cancel.Cancel();
+				var key = uri.ToLowerInvariant();
+
+				// cancel last query
+				_cancelFiles.Cancel();
+				listView.Items.Clear();
+				listView.Enabled = false;
+				listView.Tag = key;
+
+				// create new query
+				_cancelFiles = new CancellationTokenSource();
+				if (!_fileCache.ContainsKey(key))
+				{
+					var files = await _queryFiles.LoadFilesAsync(uri, _cancelFolders.Token);
+					if (!_fileCache.ContainsKey(key) && files.Count > 0)
+						_fileCache.Add(key, files);
+				}
+
+				// populate listview
+				if (listView.Tag?.ToString() == key && _fileCache.ContainsKey(key))
+				{
+					listView.BeginUpdate();
+					foreach (var file in _fileCache[key])
+					{
+						listView.Items.Add(file.Name);
+					}
+
+					listView.Enabled = true;
+					listView.EndUpdate();
+				}
 			}
-			//cmdStart.Enabled = false;
+		}
+
+		private void FolderProgress_ProgressChanged(object? sender, PatrolFolderState e)
+		{
+			var key = e.Folder.Uri.ToLowerInvariant();
+			var node = new TreeNode(e.Folder.Name);
+			node.Tag = key;
+			_nodeCache.Add(key, node);
+			var directory = PathUtils.GetParentPath(e.Folder.Uri).ToLowerInvariant();
+			if (_nodeCache.ContainsKey(directory))
+				_nodeCache[directory].Nodes.Add(node);
+			else
+				treeView.Nodes.Add(node);
+
+			lblStatus.Text = $"Loading folder #{_nodeCache.Count} {e.Folder.Uri}";
+		}
+
+		private async void Start_Click(object? sender, EventArgs e)
+		{
+			cmdStop.Enabled = true;
+			cmdStart.Enabled = false;
 			txtStart.Enabled = false;
 
-			var folders = await _query.LoadAllFoldersAsync(txtStart.Text, true, _cancel.Token);
+			_cancelFolders = new CancellationTokenSource();
+			_nodeCache = new Dictionary<string, TreeNode>();
+			var folders = await _queryFolders.LoadAllFoldersAsync(txtStart.Text, _cancelFolders.Token);
 			lblStatus.Text = $"Loaded {folders.Count} folders from {txtStart.Text}";
 
-			//cmdStart.Enabled = true;
+			cmdStop.Enabled = false;
+			cmdStart.Enabled = true;
 			txtStart.Enabled = true;
+		}
+
+		private void Stop_Click(object? sender, EventArgs e)
+		{
+			_cancelFolders.Cancel();
 		}
 	}
 }
