@@ -31,14 +31,6 @@ namespace Fortress.Core.Services
 			_progress = progress;
 		}
 
-		public async Task<List<PatrolFile>> HashAllFilesAsync(List<PatrolFile> files, CancellationToken? token = null)
-		{
-			return await Task.Run(() => {
-				return HashAllFiles(files, token);
-			});
-
-		}
-
 		public List<PatrolFile> HashAllFiles(List<PatrolFile> files, CancellationToken? token = null)
 		{
 			foreach (var f in files)

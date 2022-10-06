@@ -12,35 +12,35 @@ namespace Fortress.Patrol
 	public class CommonOptions
 	{
 		[Option('n', "name", HelpText = "Specify the ouput file name prefix")]
-		public string? Name { get; set; }
+		public string? NamePrefix { get; set; }
 
 		[Option('e', "error", HelpText = "Stops processing on first error")]
-		public bool Error { get; set; }
+		public bool StopOnError { get; set; }
 
 		[Option('l', "log", HelpText = "Create a simple text log output")]
-		public bool Log { get; set; }
+		public bool LogOutput { get; set; }
 
 		[Option('r', "report", HelpText = "Create a detailed report in Excel")]
-		public bool Report { get; set; }
+		public bool CreateReport { get; set; }
 
 		[Option('i', "index", HelpText = "Records file properties only")]
-		public bool Index { get; set; }
+		public bool IndexOnly { get; set; }
 	}
 
 	[Verb("create", HelpText = "Creates a new hash report")]
 	public class CreateOptions : CommonOptions
 	{
 		[Option('d', "directory", HelpText = "Specify the directory to start in")]
-		public string? Directory { get; set; }
+		public string? DirectoryUri { get; set; }
 
-		[Option('h', "hash", HelpText = "Specifies the hash algorithm to use", Default = HashType.Md5)]
+		[Option('h', "hash", HelpText = "Specify the hash algorithm to use", Default = HashType.Md5)]
 		public HashType HashType { get; set; }
 
-		[Option('f', "filter", HelpText = "Filename wildcard filter")]
-		public string? Filter { get; set; }
+		[Option('s', "search", HelpText = "Filename wildcard filter")]
+		public string? SearchFilter { get; set; }
 
-		[Option('s', "stub", HelpText = "Supresses directory recursion")]
-		public bool Stub { get; set; }
+		[Option('f', "flat", HelpText = "Supresses directory recursion")]
+		public bool FlatFolder { get; set; }
 
 	}
 

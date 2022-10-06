@@ -3,24 +3,24 @@
 namespace Fortress.Core.Services
 {
 	public enum HashType { Md5, Sha512 }
-	public class CalculateHash : IDisposable
+	public class GetHash : IDisposable
 	{
 		private readonly HashAlgorithm _md5;
 		private readonly HashAlgorithm _sha512;
 
-		public CalculateHash()
+		public GetHash()
 		{
 			_md5 = MD5.Create();
 			_sha512 = SHA512.Create();
 		}
 
-		public string GetHash(string filePath, HashType hasher)
+		public string Calculate(string filePath, HashType hasher)
 		{
 			using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-			return GetHash(fs, hasher);
+			return Calculate(fs, hasher);
 		}
 
-		public string GetHash(Stream s, HashType hasher)
+		public string Calculate(Stream s, HashType hasher)
 		{
 			var hash = GetHashAlgorithm(hasher).ComputeHash(s);
 			return BitConverter.ToString(hash).Replace("-", "");
