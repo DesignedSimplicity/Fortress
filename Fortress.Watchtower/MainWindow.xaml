@@ -9,10 +9,6 @@
 	<Grid>
 		
 		<ListView Name="listView">
-			<DataTemplate x:Key="TotalFileSize">
-				<TextBlock HorizontalAlignment="Right" 
-               Text="{Binding Path=TotalFileSize}"/>
-			</DataTemplate>
 			<ListView.View>
 				<GridView>
 					<GridViewColumn DisplayMemberBinding="{Binding Path=Uri}" Header="Uri" Width="100"/>
