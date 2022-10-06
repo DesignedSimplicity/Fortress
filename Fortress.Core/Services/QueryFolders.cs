@@ -15,6 +15,7 @@ namespace Fortress.Core.Services
 
 		private IProgress<PatrolFolderState>? _progress;
 		private FolderStateChange? _change;
+		private TextWriter? _output;
 
 		private int _folderCount { get; set; }
 		private readonly ConcurrentQueue<DirectoryInfo> _folderQueue = new ConcurrentQueue<DirectoryInfo>();
@@ -22,6 +23,11 @@ namespace Fortress.Core.Services
 
 		public QueryFolders()
 		{
+		}
+
+		public QueryFolders(TextWriter output)
+		{
+			_output = output;
 		}
 
 		public QueryFolders(IProgress<PatrolFolderState> progress)
@@ -48,10 +54,11 @@ namespace Fortress.Core.Services
 			var folder = new PatrolFolder(dir);
 			var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
 
+			_output?.WriteLine(folder.Uri);
 			_progress?.Report(state);
 			_change?.Invoke(state);
 
-			Thread.Sleep(1);
+			//Thread.Sleep(1);
 
 			return folder;
 		}
@@ -69,10 +76,11 @@ namespace Fortress.Core.Services
 				// cancellation returns empty list
 				if (token?.IsCancellationRequested ?? false) return new List<PatrolFolder>();
 
+				_output?.WriteLine(folder.Uri);
 				_progress?.Report(state);
 				_change?.Invoke(state);
 
-				Thread.Sleep(1);
+				//Thread.Sleep(1);
 			}
 
 			return list;
@@ -96,10 +104,11 @@ namespace Fortress.Core.Services
 				// cancellation returns empty list
 				if (token?.IsCancellationRequested ?? false) return new List<PatrolFolder>();
 
+				_output?.WriteLine(folder.Uri);
 				_progress?.Report(state);
-				_change?.Invoke(state);
+				_change?.Invoke(state);				
 
-				Thread.Sleep(1);
+				//Thread.Sleep(1);
 
 				foreach (var f in Directory.EnumerateDirectories(dir, "*", new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = false }))
 				{

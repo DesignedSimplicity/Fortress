@@ -9,19 +9,26 @@ namespace Fortress.Core.Entities
 {
 	public class PatrolFile
 	{
+		public Guid Guid { get; set; }
 		public FileInfo? File { get; set; }
 		public string Uri { get; set; }
 		public string Name { get; set; }
 		public long Size { get; set; }
 
+		public DateTime Created { get; set; }
+		public DateTime? Updated { get; set; }
+
 		public PatrolFileStatus Status { get; set; } = PatrolFileStatus.Default;
 
 		public PatrolFile(FileInfo file)
 		{
+			Guid = Guid.NewGuid();
 			Uri = file.FullName;
 			Name = file.Name;
 			File = file;
 			Size = file.Length;
+			Created = file.CreationTimeUtc;
+			Updated = file.LastWriteTimeUtc;
 		}
 
 		public PatrolFile(string uri)

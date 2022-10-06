@@ -11,8 +11,13 @@ namespace Fortress.Core.Entities
 	public class PatrolFolder
 	{
 		public DirectoryInfo? Directory { get; set; }
+
+		public Guid Guid { get; set; }
 		public string Uri { get; set; }
 		public string Name { get; set; }
+
+		public DateTime Created { get; set; }
+		public DateTime? Updated { get; set; }
 
 		public List<PatrolFolder> PatrolFolders { get; set; } = new List<PatrolFolder>();
 		public List<PatrolFile> PatrolFiles { get; set; } = new List<PatrolFile>();
@@ -21,9 +26,12 @@ namespace Fortress.Core.Entities
 
 		public PatrolFolder(DirectoryInfo dir)
 		{
+			Guid = Guid.NewGuid();
 			Uri = dir.FullName;
 			Name = dir.Name;
 			Directory = dir;
+			Created = dir.CreationTimeUtc;
+			Updated = dir.LastWriteTimeUtc;
 		}
 
 		public PatrolFolder(string uri)

@@ -1,5 +1,6 @@
 ﻿using Fortress.Core.Entities;
 using Fortress.Core.Services;
+using System.Diagnostics;
 
 namespace Fortress.Patrol
 {
@@ -17,8 +18,13 @@ namespace Fortress.Patrol
 	{
 		public void Start()
 		{
+			var s = new Stopwatch();
+			s.Start();
 			var q = new QueryFolders(this.FolderStateChange);
-			q.LoadAllFolders(@"N:\");
+			//var q = new QueryFolders(Console.Out);
+			q.LoadAllFolders(@"G:\Others");
+			s.Stop();
+			Console.WriteLine(s.ElapsedMilliseconds);
 		}
 
 		public void FolderStateChange(PatrolFolderState state)
