@@ -21,7 +21,7 @@ namespace Fortress.Lookout
 	{
 		private Progress<PatrolFolderState> _progressFolders;
 		private Progress<PatrolFileState> _progressFiles;
-		private Progress<string> _progressTotal;
+		private Progress<PatrolSource> _progressTotal;
 		private CancellationTokenSource _cancel;
 		private QueryFolders _queryFolders;
 		private QueryFiles _queryFiles;
@@ -37,7 +37,7 @@ namespace Fortress.Lookout
 
 			_progressFolders = new Progress<PatrolFolderState>();
 			_progressFiles = new Progress<PatrolFileState>();
-			_progressTotal = new Progress<string>();
+			_progressTotal = new Progress<PatrolSource>();
 			_queryFolders = new QueryFolders(_progressFolders);
 			_queryFiles = new QueryFiles(_progressFiles);
 			_cancel = new CancellationTokenSource();
@@ -54,23 +54,35 @@ namespace Fortress.Lookout
 			_cancel.Cancel();
 		}
 
-		public void StartLoad(string uri)
+		public PatrolSource StartLoad(string uri)
 		{
+			this.Text = $"Loading {uri}";
 			_cancel = new CancellationTokenSource();
+			PatrolSource source = new PatrolSource(uri);
 
 			Task.Run(() => {
+				var timer = new Stopwatch();
+				timer.Start();
+
 				var root = _queryFolders.LoadFolder(uri);
 
 				var folders = LoadSubFolders(root);
 				folders.Add(root);
 				
 				var files = LoadAllFiles(folders.OrderBy(x => x.Uri));
-				
-				IProgress<string> progress = _progressTotal as IProgress<string>;
-				progress.Report("");
+
+				timer.Stop();
+				source.Root = root;
+				source.AllFolders = folders;
+				source.AllFiles = files;
+				source.ElapsedTime = timer.Elapsed;
+
+				(_progressTotal as IProgress<PatrolSource>).Report(source);
 			});
 
 			this.ShowDialog();
+
+			return source;
 		}
 
 		private List<PatrolFile> LoadAllFiles(IEnumerable<PatrolFolder> folders)
@@ -80,6 +92,7 @@ namespace Fortress.Lookout
 			foreach (var sub in folders)
 			{
 				var files = _queryFiles.LoadFiles(sub.Uri, false, _cancel.Token);
+				sub.PatrolFiles.AddRange(files);
 				list.AddRange(files);
 			}
 
@@ -91,6 +104,7 @@ namespace Fortress.Lookout
 			var list = new List<PatrolFolder>();
 			
 			var folders = _queryFolders.LoadFolders(folder.Uri, _cancel.Token);
+			folder.PatrolFolders.AddRange(folders);
 			list.AddRange(folders);
 
 			foreach (var sub in folders)
@@ -101,12 +115,14 @@ namespace Fortress.Lookout
 			return list;
 		}
 
-		private void FolderProgress_ProgressChanged(object? sender, PatrolFolderState e)
+		private void FolderProgress_ProgressChanged(object? sender, PatrolFolderState file)
 		{
-			lblStatus.Text = $"Loading folder #{listLog.Items.Count} {e.Folder.Uri}";
+			listLog.BeginUpdate();
+
+			lblStatus.Text = $"Loading folder #{listLog.Items.Count} {file.Folder.Uri}";
 			
 			// add folder to list
-			var uri = e.Folder.Uri;
+			var uri = file.Folder.Uri;			
 			var item = listLog.Items.Add(uri);
 			item.Name = uri;
 			item.Tag = uri;
@@ -115,14 +131,27 @@ namespace Fortress.Lookout
 			item.SubItems.Add("0");
 
 			// update parent
-			var parent = FindFolderIten(e.Folder.Uri);
+			var parent = FindFolderIten(file.Folder.Uri);
 			if (parent != null) UpdateTotal(parent, _folderCountIndex);
+
+			listLog.EndUpdate();
 		}
 
-		private void FileProgress_ProgressChanged(object? sender, PatrolFileState e)
+		private ListViewItem? lastItem = null;
+		private void FileProgress_ProgressChanged(object? sender, PatrolFileState file)
 		{
+			listLog.BeginUpdate();
+
+			// ensure list is sorted
+			if (listLog.Sorting == SortOrder.None) listLog.Sorting = SortOrder.Ascending;
+
 			// update folder
-			var parent = FindFolderIten(e.File.Uri);
+			ListViewItem? parent = null;
+			if (lastItem == null || lastItem.Name != PathUtils.FixUri(PathUtils.GetParentPath(file.File.Uri)))
+				parent = FindFolderIten(file.File.Uri);
+			else
+				parent = lastItem;
+
 			if (parent != null)
 			{
 				lblStatus.Text = $"Loading files for folder {parent.Name}";
@@ -130,14 +159,26 @@ namespace Fortress.Lookout
 
 				parent.EnsureVisible();
 				UpdateTotal(parent, _fileCountIndex);
-				UpdateTotal(parent, _fileSizeIndex, e.File.Size);
+				UpdateTotal(parent, _fileSizeIndex, file.File.Size);
 			}
+			lastItem = parent;
+
+			listLog.EndUpdate();
 		}
 
-		private void TotalProgress_ProgressChanged(object? sender, string e)
+		private void TotalProgress_ProgressChanged(object? sender, PatrolSource source)
 		{
-			// total
-			lblStatus.Text = $"Done!";
+			// show completed totals
+			var item = listLog.Items.Insert(0, "Totals");
+			item.Font = new Font(item.Font, FontStyle.Bold);
+			item.BackColor = listLog.ForeColor;
+			item.ForeColor = listLog.BackColor;
+			item.SubItems.Add(source.AllFolders.Count.ToString(_numberFormat));
+			item.SubItems.Add(source.AllFiles.Count.ToString(_numberFormat));
+			item.SubItems.Add(source.AllFiles.Sum(x => x.Size).ToString(_numberFormat));
+			item.EnsureVisible();
+
+			lblStatus.Text = $"Elapsed Time {source.ElapsedTime.Hours:00}:{source.ElapsedTime.Minutes:00}.{source.ElapsedTime.Seconds:00}";
 		}
 
 		private ListViewItem? FindFolderIten(string uri)

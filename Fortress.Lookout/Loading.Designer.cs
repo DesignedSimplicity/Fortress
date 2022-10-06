@@ -67,7 +67,6 @@
 			this.listLog.Name = "listLog";
 			this.listLog.ShowGroups = false;
 			this.listLog.Size = new System.Drawing.Size(784, 318);
-			this.listLog.Sorting = System.Windows.Forms.SortOrder.Ascending;
 			this.listLog.TabIndex = 3;
 			this.listLog.UseCompatibleStateImageBehavior = false;
 			this.listLog.View = System.Windows.Forms.View.Details;
@@ -81,19 +80,19 @@
 			// 
 			this.colFolders.Text = "Folders";
 			this.colFolders.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-			this.colFolders.Width = 80;
+			this.colFolders.Width = 64;
 			// 
 			// colFiles
 			// 
 			this.colFiles.Text = "Files";
 			this.colFiles.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-			this.colFiles.Width = 80;
+			this.colFiles.Width = 64;
 			// 
 			// colFileSize
 			// 
 			this.colFileSize.Text = "File Size";
 			this.colFileSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-			this.colFileSize.Width = 100;
+			this.colFileSize.Width = 150;
 			// 
 			// Loading
 			// 

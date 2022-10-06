@@ -44,10 +44,10 @@ namespace Fortress.Core.Services
 			var folder = new PatrolFolder(dir);
 			var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
 
-			Thread.Sleep(1);
-
 			_progress?.Report(state);
 			_change?.Invoke(state);
+
+			Thread.Sleep(1);
 
 			return folder;
 		}
@@ -62,13 +62,13 @@ namespace Fortress.Core.Services
 				var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
 				list.Add(folder);
 
-				Thread.Sleep(1);
-
 				// cancellation returns empty list
 				if (token?.IsCancellationRequested ?? false) return new List<PatrolFolder>();
 
 				_progress?.Report(state);
 				_change?.Invoke(state);
+
+				Thread.Sleep(1);
 			}
 
 			return list;
@@ -89,13 +89,13 @@ namespace Fortress.Core.Services
 				var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
 				list.Add(folder);
 				
-				Thread.Sleep(1);
-
 				// cancellation returns empty list
 				if (token?.IsCancellationRequested ?? false) return new List<PatrolFolder>();
 
 				_progress?.Report(state);
 				_change?.Invoke(state);
+
+				Thread.Sleep(1);
 
 				foreach (var f in Directory.EnumerateDirectories(dir, "*", new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = false }))
 				{

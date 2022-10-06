@@ -14,6 +14,9 @@ namespace Fortress.Core.Entities
 		public string Uri { get; set; }
 		public string Name { get; set; }
 
+		public List<PatrolFolder> PatrolFolders { get; set; } = new List<PatrolFolder>();
+		public List<PatrolFile> PatrolFiles { get; set; } = new List<PatrolFile>();
+
 		public PatrolFolder(DirectoryInfo dir)
 		{
 			Uri = dir.FullName;

@@ -53,10 +53,10 @@ namespace Fortress.Core.Services
 				var state = new PatrolFileState(file, PatrolFileStatus.Exists);
 				list.Add(file);
 
-				Thread.Sleep(1);
-
 				_progress?.Report(state);
 				//_change?.Invoke(state);
+				
+				Thread.Sleep(1);
 			}
 
 			return list;

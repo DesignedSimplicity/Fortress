@@ -133,7 +133,7 @@ namespace Fortress.Lookout
 			using (var loader = new Loading())
 			{
 				this.Enabled = false;
-				loader.StartLoad(uri);
+				var source = loader.StartLoad(uri);
 				this.Enabled = true;
 			}
 
