@@ -20,6 +20,10 @@ namespace Fortress.Core.Services
 		private readonly ConcurrentQueue<DirectoryInfo> _folderQueue = new ConcurrentQueue<DirectoryInfo>();
 		private readonly ConcurrentBag<Task> _tasks = new ConcurrentBag<Task>();
 
+		public QueryFolders()
+		{
+		}
+
 		public QueryFolders(IProgress<PatrolFolderState> progress)
 		{
 			_progress = progress;

@@ -9,6 +9,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,8 +20,8 @@ namespace Fortress.Lookout
 {
 	public partial class Loading : Form
 	{
-		private Progress<PatrolFolderState> _progressFolders;
-		private Progress<PatrolFileState> _progressFiles;
+		private Progress<PatrolFolder> _progressFolders;
+		private Progress<PatrolFolder> _progressFiles;
 		private Progress<PatrolSource> _progressTotal;
 		private CancellationTokenSource _cancel;
 		private QueryFolders _queryFolders;
@@ -35,11 +36,12 @@ namespace Fortress.Lookout
 		{
 			InitializeComponent();
 
-			_progressFolders = new Progress<PatrolFolderState>();
-			_progressFiles = new Progress<PatrolFileState>();
+			//_progressFolders = new Progress<PatrolFolderState>();
+			_progressFolders = new Progress<PatrolFolder>();
+			_progressFiles = new Progress<PatrolFolder>();
 			_progressTotal = new Progress<PatrolSource>();
-			_queryFolders = new QueryFolders(_progressFolders);
-			_queryFiles = new QueryFiles(_progressFiles);
+			_queryFolders = new QueryFolders();
+			_queryFiles = new QueryFiles();
 			_cancel = new CancellationTokenSource();
 
 			_progressFolders.ProgressChanged += FolderProgress_ProgressChanged;
@@ -94,6 +96,7 @@ namespace Fortress.Lookout
 				var files = _queryFiles.LoadFiles(sub.Uri, false, _cancel.Token);
 				sub.PatrolFiles.AddRange(files);
 				list.AddRange(files);
+				(_progressFiles as IProgress<PatrolFolder>)?.Report(sub);
 			}
 
 			return list;
@@ -106,23 +109,43 @@ namespace Fortress.Lookout
 			var folders = _queryFolders.LoadFolders(folder.Uri, _cancel.Token);
 			folder.PatrolFolders.AddRange(folders);
 			list.AddRange(folders);
+			(_progressFolders as IProgress<PatrolFolder>)?.Report(folder);
+
 
 			foreach (var sub in folders)
 			{
 				list.AddRange(LoadSubFolders(sub));
+				(_progressFolders as IProgress<PatrolFolder>)?.Report(sub);
 			}
 
 			return list;
 		}
-
-		private void FolderProgress_ProgressChanged(object? sender, PatrolFolderState file)
+		private void FolderProgress_ProgressChanged(object? sender, PatrolFolder folder)
 		{
 			listLog.BeginUpdate();
 
-			lblStatus.Text = $"Loading folder #{listLog.Items.Count} {file.Folder.Uri}";
+			lblStatus.Text = $"Loading folder #{listLog.Items.Count} {folder.Uri}";
+
+			// add folder to list
+			var uri = folder.Uri;
+			var item = listLog.Items.Add(uri);
+			item.Name = uri;
+			item.Tag = uri;
+			item.SubItems.Add(folder.PatrolFolders.Count.ToString(_numberFormat));
+			item.SubItems.Add("0");
+			item.SubItems.Add("0");
+
+			listLog.EndUpdate();
+		}
+
+		private void FolderProgress_ProgressChanged2(object? sender, PatrolFolderState folder)
+		{
+			listLog.BeginUpdate();
+
+			lblStatus.Text = $"Loading folder #{listLog.Items.Count} {folder.Folder.Uri}";
 			
 			// add folder to list
-			var uri = file.Folder.Uri;			
+			var uri = folder.Folder.Uri;			
 			var item = listLog.Items.Add(uri);
 			item.Name = uri;
 			item.Tag = uri;
@@ -131,14 +154,36 @@ namespace Fortress.Lookout
 			item.SubItems.Add("0");
 
 			// update parent
-			var parent = FindFolderIten(file.Folder.Uri);
+			var parent = FindFolderIten(folder.Folder.Uri);
 			if (parent != null) UpdateTotal(parent, _folderCountIndex);
 
 			listLog.EndUpdate();
 		}
 
+		private void FileProgress_ProgressChanged(object? sender, PatrolFolder folder)
+		{
+			listLog.BeginUpdate();
+
+			// ensure list is sorted
+			if (listLog.Sorting == SortOrder.None) listLog.Sorting = SortOrder.Ascending;
+
+			// update folder
+			ListViewItem? item = FindFolderIten(folder.Uri);
+			if (item != null)
+			{
+				lblStatus.Text = $"Loaded files for folder {item.Name}";
+				barProgress.Value = 100 * (item.Index + 1) / listLog.Items.Count;
+
+				item.EnsureVisible();
+				item.SubItems[_fileCountIndex].Text = folder.PatrolFiles.Count.ToString(_numberFormat);
+				item.SubItems[_fileSizeIndex].Text = folder.PatrolFiles.Sum(x => x.Size).ToString(_numberFormat);
+			}
+
+			listLog.EndUpdate();
+		}
+
 		private ListViewItem? lastItem = null;
-		private void FileProgress_ProgressChanged(object? sender, PatrolFileState file)
+		private void FileProgress_ProgressChanged2(object? sender, PatrolFileState file)
 		{
 			listLog.BeginUpdate();
 

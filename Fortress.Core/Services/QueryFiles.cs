@@ -26,6 +26,10 @@ namespace Fortress.Core.Services
 			_change = progress;
 		}
 		*/
+		public QueryFiles()
+		{
+		}
+
 		public QueryFiles(IProgress<PatrolFileState> progress)
 		{
 			_progress = progress;

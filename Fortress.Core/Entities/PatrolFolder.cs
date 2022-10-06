@@ -17,6 +17,8 @@ namespace Fortress.Core.Entities
 		public List<PatrolFolder> PatrolFolders { get; set; } = new List<PatrolFolder>();
 		public List<PatrolFile> PatrolFiles { get; set; } = new List<PatrolFile>();
 
+		public long TotalFileSize => PatrolFiles.Sum(x => x.Size);
+
 		public PatrolFolder(DirectoryInfo dir)
 		{
 			Uri = dir.FullName;
