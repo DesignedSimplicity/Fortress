@@ -14,10 +14,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Windows.Forms.AxHost;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 
 namespace Fortress.Lookout
 {
@@ -130,8 +126,18 @@ namespace Fortress.Lookout
 			lblStatus.Text = $"Loading folder #{_nodeCache.Count} {e.Folder.Uri}";
 		}
 
-		private async void Start_Click(object? sender, EventArgs e)
+		private void Start_Click(object? sender, EventArgs e)
 		{
+			var uri = txtStart.Text;
+
+			using (var loader = new Loading())
+			{
+				this.Enabled = false;
+				loader.StartLoad(uri);
+				this.Enabled = true;
+			}
+
+			/*
 			cmdStop.Enabled = true;
 			cmdStart.Enabled = false;
 			txtStart.Enabled = false;
@@ -153,6 +159,7 @@ namespace Fortress.Lookout
 			var hashFiles = new HashFiles(_progressHash);
 			await hashFiles.HashAllFilesAsync(_fileCache.Values.OrderBy(x => x.Uri).ToList(), _cancel.Token);
 			lblStatus.Text = $"Hashed {_fileCache.Count} files from {uri}";
+			*/
 		}
 
 		private void Stop_Click(object? sender, EventArgs e)

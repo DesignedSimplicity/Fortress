@@ -191,6 +191,7 @@
 			this.Controls.Add(this.toolStripContainer1);
 			this.DoubleBuffered = true;
 			this.Name = "Main";
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "Main";
 			this.toolStripContainer1.BottomToolStripPanel.ResumeLayout(false);
 			this.toolStripContainer1.BottomToolStripPanel.PerformLayout();

@@ -38,6 +38,42 @@ namespace Fortress.Core.Services
 
 		}
 
+		public PatrolFolder LoadFolder(string uri)
+		{
+			var dir = new DirectoryInfo(uri);
+			var folder = new PatrolFolder(dir);
+			var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
+
+			Thread.Sleep(1);
+
+			_progress?.Report(state);
+			_change?.Invoke(state);
+
+			return folder;
+		}
+
+		public List<PatrolFolder> LoadFolders(string uri, CancellationToken? token = null)
+		{
+			var list = new List<PatrolFolder>();
+			var start = new DirectoryInfo(uri);
+			foreach (var dir in start.EnumerateDirectories("*", new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = false }))
+			{
+				var folder = new PatrolFolder(dir);
+				var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
+				list.Add(folder);
+
+				Thread.Sleep(1);
+
+				// cancellation returns empty list
+				if (token?.IsCancellationRequested ?? false) return new List<PatrolFolder>();
+
+				_progress?.Report(state);
+				_change?.Invoke(state);
+			}
+
+			return list;
+		}
+
 		public List<PatrolFolder> LoadAllFolders(string uri, CancellationToken? token = null)
 		{
 			var list = new List<PatrolFolder>();
@@ -48,15 +84,15 @@ namespace Fortress.Core.Services
 			
 			while (dirs.Any())
 			{
-				// cancellation returns empty list
-				if (token?.IsCancellationRequested ?? false) return new List<PatrolFolder>();
-
 				var dir = dirs.Dequeue();
 				var folder = new PatrolFolder(dir);
 				var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
 				list.Add(folder);
 				
 				Thread.Sleep(1);
+
+				// cancellation returns empty list
+				if (token?.IsCancellationRequested ?? false) return new List<PatrolFolder>();
 
 				_progress?.Report(state);
 				_change?.Invoke(state);

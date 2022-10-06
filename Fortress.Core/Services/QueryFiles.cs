@@ -42,8 +42,9 @@ namespace Fortress.Core.Services
 		public List<PatrolFile> LoadFiles(string uri, bool recursive = false, CancellationToken? token = null)
 		{
 			var list = new List<PatrolFile>();
+			var dir = new DirectoryInfo(uri);
 			
-			foreach (var f in Directory.EnumerateFiles(uri, "*.*", new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = recursive }))
+			foreach (var f in dir.EnumerateFiles("*.*", new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = recursive }))
 			{
 				// cancellation returns empty list
 				if (token?.IsCancellationRequested ?? false) return new List<PatrolFile>();
