@@ -2,7 +2,6 @@
 //Better exception reporting - add to Review section - test all instances - add to excel file
 //Simple vs verbose logging
 
-
 using Fortress.Core.Entities;
 using Fortress.Core.Services;
 using Fortress.Core.Services.Settings;
@@ -15,7 +14,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections;
 using Pastel;
-using static System.Collections.Specialized.BitVector32;
 using System.Diagnostics;
 
 namespace Fortress.Core.Services
@@ -233,7 +231,7 @@ namespace Fortress.Core.Services
 							{
 								_console?.Write($"[{fileIndex} of {fileCount}] ".Pastel(Color.Gray));
 								_console?.Write($"{file.Name} -> ");
-								_console?.Write($"{file.Size:###,###,###,###,##0}".Pastel(Color.LightGreen));
+								_console?.Write($"{file.Size:###,###,###,###,##0}".Pastel(Color.LightYellow));
 							}
 
 							if (execute.Request.IndexOnly)
@@ -258,7 +256,10 @@ namespace Fortress.Core.Services
 								}
 								catch (Exception ex)
 								{
-									_console?.Write("!".Pastel(Color.Red));
+									if (verbose)
+										_console?.WriteLine(ex.GetType().ToString().Pastel(Color.Red));
+									else
+										_console?.Write("!".Pastel(Color.Red));
 
 									file.Status = FileStatus.Error;
 									exceptions.Add(ex);

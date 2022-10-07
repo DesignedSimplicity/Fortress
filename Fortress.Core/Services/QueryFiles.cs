@@ -87,11 +87,12 @@ namespace Fortress.Core.Services
 
 			return list;
 		}
+
 		private bool AssertPathTooLongException(string uri)
 		{
 			if (!PathUtils.IsMaxPath(uri)) return false;
 
-			var message = $"FilePathTooLong: {uri}";
+			var message = $"File path too long: '{uri}'.";
 			_output?.WriteLine(message);
 			var exception = new PathTooLongException(message);
 			Exceptions.Add(exception);
