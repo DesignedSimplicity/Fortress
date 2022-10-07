@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections;
 
 namespace Fortress.Core.Services
 {
@@ -16,11 +17,13 @@ namespace Fortress.Core.Services
 		private StreamWriter? _log;
 		private readonly FolderNotify? _folderNotify;
 		private readonly FileNotify? _fileNotify;
+		private readonly FileNotify? _hashNotify;
 
-		public CreatePatrol(FolderNotify? folder, FileNotify? file)
+		public CreatePatrol(FolderNotify? folder, FileNotify? file, FileNotify? hash)
 		{
 			_folderNotify = folder;
 			_fileNotify = file;
+			_hashNotify = hash;
 		}
 
 		public void Dispose()
@@ -83,7 +86,24 @@ namespace Fortress.Core.Services
 				Notify = _folderNotify,
 				Output = _log,
 			});
-			execute.Folders = queryFolders.LoadAllFolders(execute.SourceFolderUri).OrderBy(x => x.Uri).ToList();
+			
+			// start with root folder
+			var root = queryFolders.LoadFolder(execute.SourceFolderUri);
+			Queue<PatrolFolder> queue = new Queue<PatrolFolder>();
+			queue.Enqueue(root);
+
+			// until all folders are complete
+			while (queue.Count > 0)
+			{
+				var folder = queue.Dequeue();
+				execute.Folders.Add(folder);
+				var folders = queryFolders.LoadFolders(folder.Uri);
+				folder.PatrolFolders.AddRange(folders);
+				foreach(var sub in folders)
+				{
+					queue.Enqueue(sub);
+				}
+			}
 			execute.Exceptions.AddRange(queryFolders.Exceptions);
 
 			// load files for each directory
@@ -97,6 +117,7 @@ namespace Fortress.Core.Services
 			foreach(var folder in execute.Folders)
 			{
 				var files = queryFiles.LoadFiles(folder.Uri, execute.Request.SearchFilter).OrderBy(x => x.Name).ToList();
+				folder.PatrolFiles.AddRange(files);
 				execute.Files.AddRange(files);
 			}
 			execute.Exceptions.AddRange(queryFiles.Exceptions);
@@ -107,7 +128,11 @@ namespace Fortress.Core.Services
 
 		public void Execute(CreatePatrolExecute execute)
 		{
-
+			foreach (var folder in execute.Folders)
+			{
+				//folder.PatrolFiles
+				//execute.Files.AddRange(files);
+			}
 		}
 
 		public void Output(CreatePatrolExecute execute)

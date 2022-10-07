@@ -44,7 +44,7 @@ namespace Fortress.Patrol
 
 			Console.SetWindowSize(200, 50);
 
-			var createPatrol = new CreatePatrol(this.FolderLoaded, this.FileLoaded);
+			var createPatrol = new CreatePatrol(this.FolderLoaded, this.FileLoaded, this.HashLoaded);
 			try
 			{
 				// validate
@@ -90,6 +90,9 @@ namespace Fortress.Patrol
 				Console.WriteLine(_section.Pastel(Color.DarkGoldenrod));
 				Console.WriteLine($"Folders: {execute.Folders.Count}\tFiles: {execute.Files.Count}\tTotal Size: {execute.Files.Sum(x => x.Size)}".Pastel(Color.DarkGoldenrod));
 				Console.WriteLine(_divider.Pastel(Color.DarkGoldenrod));
+
+				// execute
+				createPatrol.Execute(execute);
 			}
 			catch (Exception ex)
 			{
@@ -118,7 +121,7 @@ namespace Fortress.Patrol
 			Console.WriteLine(file.Uri.Pastel(Color.LightGoldenrodYellow));
 		}
 
-		private void HashCreated(PatrolFile file)
+		private void HashLoaded(PatrolFile file)
 		{
 			Console.WriteLine($"{file.Uri}\t{file.Size.ToString(_formatNumber)}".Pastel(Color.Cyan));
 		}
