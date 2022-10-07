@@ -58,11 +58,8 @@ namespace Fortress.Patrol
 			try
 			{				
 				var execute = createPatrol.Validate(request);
-				var prepared = createPatrol.Prepare(execute);
-
-
-				// execute
-				createPatrol.Execute(execute);
+				createPatrol.Prepare(execute);
+				createPatrol.Process(execute);
 			}
 			catch (Exception ex)
 			{

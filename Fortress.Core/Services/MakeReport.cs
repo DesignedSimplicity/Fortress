@@ -172,7 +172,7 @@ namespace Fortress.Core.Services
 				_files.Cells[row, col++].Value = file.Name;
 				_files.Cells[row, col++].Value = ""; // file.Extension;
 				_files.Cells[row, col++].Value = file.Size;
-				_files.Cells[row, col++].Value = file.Status == PatrolFileStatus.Default ? "" : file.Status.ToString();
+				_files.Cells[row, col++].Value = file.Status == FileStatus.Default ? "" : file.Status.ToString();
 				_files.Cells[row, col++].Value = ""; // file.Md5;
 				_files.Cells[row, col++].Value = "";//file.Md5Status == HashStatus.Unknown ? "" : file.Md5Status.ToString();
 				_files.Cells[row, col++].Value = ""; // file.Sha512;

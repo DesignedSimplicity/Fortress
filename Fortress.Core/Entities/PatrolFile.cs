@@ -18,7 +18,13 @@ namespace Fortress.Core.Entities
 		public DateTime Created { get; set; }
 		public DateTime? Updated { get; set; }
 
-		public PatrolFileStatus Status { get; set; } = PatrolFileStatus.Default;
+		public string Md5 = string.Empty;
+		public string Sha512 = string.Empty;
+
+		public HashStatus Md5Status = HashStatus.Unknown;
+		public HashStatus Sha512Status = HashStatus.Unknown;
+
+		public FileStatus Status { get; set; } = FileStatus.Default;
 
 		public PatrolFile(FileInfo file)
 		{
@@ -38,13 +44,14 @@ namespace Fortress.Core.Entities
 		}
 	}
 
+	public enum HashStatus { Unknown = 0, Created = 1, Updated = 2, Verified = 3 }
 
-	public enum PatrolFileStatus
+	public enum FileStatus
 	{
 		/// <summary>
 		/// Error accessing file
 		/// </summary>
-		Exception = -9,
+		Error = -9,
 
 		/// <summary>
 		/// Not found on file system
@@ -81,13 +88,13 @@ namespace Fortress.Core.Entities
 	{
 		public PatrolFile File { get; set; }
 		public Guid StateId { get; set; } = Guid.NewGuid();
-		public PatrolFileStatus Status { get; set; } = PatrolFileStatus.Default;
+		public FileStatus Status { get; set; } = FileStatus.Default;
 		public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 		public string Message { get; set; } = string.Empty;
 		public Exception? Exception { get; set; } = null;
 
 
-		public PatrolFileState(PatrolFile file, PatrolFileStatus status = PatrolFileStatus.Default, string message = "")
+		public PatrolFileState(PatrolFile file, FileStatus status = FileStatus.Default, string message = "")
 		{
 			File = file;
 			Status = status;
@@ -97,7 +104,7 @@ namespace Fortress.Core.Entities
 		public PatrolFileState(PatrolFile file, Exception ex)
 		{
 			File = file;
-			Status = PatrolFileStatus.Exception;
+			Status = FileStatus.Error;
 			Message = ex.Message;
 		}
 	}

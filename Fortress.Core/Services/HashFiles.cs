@@ -38,22 +38,22 @@ namespace Fortress.Core.Services
 				// cancellation returns empty list
 				if (token?.IsCancellationRequested ?? false) return new List<PatrolFile>();
 
-				var state = new PatrolFileState(f, PatrolFileStatus.Hashed);
+				var state = new PatrolFileState(f, FileStatus.Hashed);
 				if (f.Name.StartsWith("a", StringComparison.OrdinalIgnoreCase))
 				{
-					state.Status = PatrolFileStatus.NotFound;
+					state.Status = FileStatus.NotFound;
 				}
 				else if (f.Name.StartsWith("e", StringComparison.OrdinalIgnoreCase))
 				{
-					state.Status = PatrolFileStatus.Exception;
+					state.Status = FileStatus.Error;
 				}
 				else if (f.Name.StartsWith("m", StringComparison.OrdinalIgnoreCase))
 				{
-					state.Status = PatrolFileStatus.Matched;
+					state.Status = FileStatus.Matched;
 				}
 				else if (f.Name.StartsWith("v", StringComparison.OrdinalIgnoreCase))
 				{
-					state.Status = PatrolFileStatus.Verified;
+					state.Status = FileStatus.Verified;
 				}
 				f.Status = state.Status;
 

@@ -13,7 +13,8 @@ namespace Fortress.Core.Services
 		protected const string LogFileExtension = ".txt";
 		protected const string ReportFileExtension = ".xlsx";
 
-		protected const string NumberFormat = "###,###,###,###,###,##0";
+		protected const string WholeNumberFormat = "###,###,###,###,###,##0";
+		protected const string SingleDecimalFormat = "###,###,###,###,###,##0.0";
 
 		protected const string ConsoleSection = "================================================================================";
 		protected const string ConsoleDivider = "--------------------------------------------------------------------------------";

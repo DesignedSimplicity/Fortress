@@ -75,7 +75,7 @@ namespace Fortress.Core.Services
 				if (token?.IsCancellationRequested ?? false) return new List<PatrolFile>();
 
 				var file = new PatrolFile(f);
-				var state = new PatrolFileState(file, PatrolFileStatus.Exists);
+				var state = new PatrolFileState(file, FileStatus.Exists);
 				list.Add(file);
 
 				_notify?.Invoke(file);

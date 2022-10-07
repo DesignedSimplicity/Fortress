@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Collections;
 using Pastel;
 using static System.Collections.Specialized.BitVector32;
+using System.Diagnostics;
 
 namespace Fortress.Core.Services
 {
@@ -165,7 +166,7 @@ namespace Fortress.Core.Services
 			// show summary
 			_console?.WriteLine();
 			_console?.WriteLine(ConsoleSection.Pastel(Color.Orange));
-			_console?.WriteLine($"Folders: {execute.Folders.Count.ToString(NumberFormat)}\tFiles: {execute.Files.Count.ToString(NumberFormat)}\tTotal Size: {execute.Files.Sum(x => x.Size).ToString(NumberFormat)}".Pastel(Color.Orange));
+			_console?.WriteLine($"Folders: {execute.Folders.Count.ToString(WholeNumberFormat)}\tFiles: {execute.Files.Count.ToString(WholeNumberFormat)}\tTotal Size: {execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}".Pastel(Color.Orange));
 			_console?.WriteLine(ConsoleDivider.Pastel(Color.Orange));
 
 			// add collected exceptions
@@ -190,13 +191,85 @@ namespace Fortress.Core.Services
 			return exceptions;
 		}
 
-		public void Execute(CreatePatrolExecute execute)
+		public void Process(CreatePatrolExecute execute)
 		{
-			foreach (var folder in execute.Folders)
+			// show prep in console
+			_console?.WriteLine(ConsoleSection.Pastel(Color.Cyan));
+			_console?.WriteLine($"Process: {execute.SourceFolderUri}".Pastel(Color.Cyan));
+			_console?.WriteLine(ConsoleDivider.Pastel(Color.Cyan));
+
+			long totalDataProcessed = 0;
+			var stopwatch = new Stopwatch();
+			using (var hasher = new GetHash())
 			{
-				//folder.PatrolFiles
-				//execute.Files.AddRange(files);
+				// prepare totals
+				var fileIndex = 0;
+				var fileCount = execute.Files.Count;
+				foreach (var folder in execute.Folders.OrderBy(x => x.Uri))
+				{
+					var anyFiles = folder.PatrolFiles.Any();
+					_console?.WriteLine($"Folder: {folder.Uri}".Pastel(anyFiles ? Color.Goldenrod : Color.DarkGoldenrod));
+					if (anyFiles)
+					{
+						_console?.WriteLine(ConsoleDivider.Pastel(Color.Gray));
+
+						foreach (var file in folder.PatrolFiles.OrderBy(x => x.Name))
+						{
+							fileIndex++;
+							totalDataProcessed += file.Size;
+
+							_console?.Write($"[{fileIndex} of {fileCount}] ".Pastel(Color.Gray));
+							_console?.Write($"{file.Name} -> ");
+							_console?.Write($"{file.Size:###,###,###,###,##0}".Pastel(Color.LightYellow));
+
+							if (execute.Request.IndexOnly)
+							{
+								_console?.WriteLine($" LOG".Pastel(Color.GreenYellow));
+							}
+							else
+							{
+								// calculate hash and output hash to log
+								var hashType = execute.Request.HashType;
+								_console?.Write($" {hashType.ToString().Pastel(Color.LightGreen)} = ");
+								try
+								{
+									var result = hasher.Calculate(file, hashType);
+									_console?.WriteLine($"{result.HashValue.Pastel(Color.Green)} @ {result.BytesPerMillisecond:###,###,###,###,##0} b/ms".Pastel(Color.Gray));
+								}
+								catch (UnauthorizedAccessException ex)
+								{
+									file.Status = FileStatus.Error;
+									execute.Exceptions.Add(ex);
+
+									// log exception and re-throw if not silent
+									if (!execute.Request.StopOnError)
+									{
+										_console?.WriteLine($"UnauthorizedAccessException".Pastel(Color.Red));
+									}
+									else
+										throw;
+								}
+							}
+						}
+
+						_console?.WriteLine(ConsoleDivider.Pastel(Color.Goldenrod));
+					}
+				}
 			}
+
+			stopwatch.Stop();
+			var time = stopwatch.Elapsed;
+			var mb = 1.0 * totalDataProcessed / 1024.0 / 1024.0;
+			var gb = 1.0 * mb / 1024;
+			var tb = 1.0 * gb / 1024.0;
+			var gbh = 1.0 * gb / time.TotalHours;
+			var mbs = 1.0 * mb / time.TotalMinutes;
+
+			_console?.WriteLine(ConsoleSection.Pastel(Color.Cyan));
+			_console?.WriteLine($"BYTES:\t{totalDataProcessed.ToString(WholeNumberFormat)} = {mb.ToString(SingleDecimalFormat)} MB = {gb.ToString(SingleDecimalFormat)} GB = {tb.ToString(SingleDecimalFormat)} TB".Pastel(Color.Cyan));
+			_console?.WriteLine($"TIME:\t{time:hh\\:mm\\:ss} H:M:S = {time.TotalSeconds.ToString(WholeNumberFormat)} SEC".Pastel(Color.Cyan));
+			_console?.WriteLine($"RATE:\t{gbh.ToString(SingleDecimalFormat)} GB/HOUR = {mbs.ToString(SingleDecimalFormat)} MB/SEC".Pastel(Color.Cyan));
+			_console?.WriteLine(ConsoleDivider.Pastel(Color.Cyan));
 		}
 
 		public void Output(CreatePatrolExecute execute)
