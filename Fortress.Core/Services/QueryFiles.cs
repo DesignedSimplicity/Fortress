@@ -68,7 +68,7 @@ namespace Fortress.Core.Services
 			
 			foreach (var f in dir.EnumerateFiles(filter ?? "*.*", new EnumerationOptions { IgnoreInaccessible = !_stopOnError, RecurseSubdirectories = recursive }))
 			{
-				_output?.WriteLineAsync($"LoadFile: {f.FullName}");
+				_output?.WriteLine($"LoadFile: {f.FullName}");
 				AssertPathTooLongException(f.FullName);
 
 				// cancellation returns empty list
@@ -92,7 +92,7 @@ namespace Fortress.Core.Services
 			if (!PathUtils.IsMaxPath(uri)) return false;
 
 			var message = $"FilePathTooLong: {uri}";
-			_output?.WriteLineAsync(message);
+			_output?.WriteLine(message);
 			var exception = new PathTooLongException(message);
 			Exceptions.Add(exception);
 

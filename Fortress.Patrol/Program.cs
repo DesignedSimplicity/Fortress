@@ -17,7 +17,7 @@ namespace Fortress.Patrol
 
 			var engine = new Engine();
 
-			string[] test = { "create", "-d", @"N:\", "-vl" };
+			string[] test = { "create", "-d", @"N:\", "" };
 			var result = parser.ParseArguments<CreateOptions, VerifyOptions>(test)
 				.WithParsed<CreateOptions>(x => engine.Create(x))
 				.WithParsed<VerifyOptions>(x => engine.Verify(x));

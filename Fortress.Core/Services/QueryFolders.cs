@@ -54,7 +54,7 @@ namespace Fortress.Core.Services
 
 		public PatrolFolder LoadFolder(string uri)
 		{
-			_output?.WriteLineAsync($"LoadFolder: {uri}");
+			_output?.WriteLine($"LoadFolder: {uri}");
 			var dir = new DirectoryInfo(uri);
 			AssertPathTooLongException(dir.FullName);
 
@@ -72,14 +72,14 @@ namespace Fortress.Core.Services
 
 		public List<PatrolFolder> LoadFolders(string uri, CancellationToken? token = null)
 		{
-			_output?.WriteLineAsync($"LoadFolders: {uri}");
+			_output?.WriteLine($"LoadFolders: {uri}");
 			var start = new DirectoryInfo(uri);
 			AssertPathTooLongException(start.FullName);
 
 			var list = new List<PatrolFolder>();
 			foreach (var dir in start.EnumerateDirectories("*", new EnumerationOptions { IgnoreInaccessible = !_stopOnError, RecurseSubdirectories = false }))
 			{
-				_output?.WriteLineAsync($"LoadFolder: {dir.FullName}");
+				_output?.WriteLine($"LoadFolder: {dir.FullName}");
 				AssertPathTooLongException(dir.FullName);
 
 				var folder = new PatrolFolder(dir);
@@ -107,7 +107,7 @@ namespace Fortress.Core.Services
 		/// <returns></returns>
 		public List<PatrolFolder> LoadAllFolders(string uri, CancellationToken? token = null)
 		{
-			_output?.WriteLineAsync($"LoadAllFolders: {uri}");
+			_output?.WriteLine($"LoadAllFolders: {uri}");
 			var start = new DirectoryInfo(uri);
 			AssertPathTooLongException(start.FullName);
 
@@ -118,7 +118,7 @@ namespace Fortress.Core.Services
 			while (dirs.Any())
 			{
 				var dir = dirs.Dequeue();
-				_output?.WriteLineAsync($"LoadFolder: {dir}");
+				_output?.WriteLine($"LoadFolder: {dir}");
 				AssertPathTooLongException(dir);
 
 				var folder = new PatrolFolder(dir);
@@ -148,7 +148,7 @@ namespace Fortress.Core.Services
 			if (!PathUtils.IsMaxPath(uri)) return false;
 
 			var message = $"FolderPathTooLong: {uri}";
-			_output?.WriteLineAsync(message);
+			_output?.WriteLine(message);
 			var exception = new PathTooLongException(message);
 			Exceptions.Add(exception);
 
