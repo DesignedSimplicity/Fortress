@@ -14,7 +14,9 @@ namespace Fortress.Core.Services
 		protected const string ReportFileExtension = ".xlsx";
 
 		protected const string WholeNumberFormat = "###,###,###,###,###,##0";
-		protected const string SingleDecimalFormat = "###,###,###,###,###,##0.0";
+		protected const string SingleDecimalFormat = WholeNumberFormat + ".0";
+		protected const string DoubleDecimalFormat = WholeNumberFormat + ".00";
+		protected const string TripleDecimalFormat = WholeNumberFormat + ".000";
 
 		protected const string ConsoleSection = "================================================================================";
 		protected const string ConsoleDivider = "--------------------------------------------------------------------------------";
@@ -25,6 +27,21 @@ namespace Fortress.Core.Services
 		{
 			console?.WriteLine(ex.Message.Pastel(Color.Red));
 			if (verbose) console?.WriteLine(ex.ToString().Pastel(Color.DarkRed));
+		}
+
+		protected string GetPaddedNumberFormat(long maxNumber, int decimals = 0)
+		{
+			var length = maxNumber.ToString().Length;
+			var commas = length / 3;
+			var extra = commas;
+			var format = WholeNumberFormat;
+			if (decimals > 0)
+			{
+				extra++;
+				format += ".";
+				for (int i = 0; i < decimals; i++) format += "0";
+			}
+			return "{0," + (length + extra).ToString("0") + ":" + format + "}";
 		}
 	}
 }

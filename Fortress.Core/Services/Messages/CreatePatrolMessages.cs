@@ -26,6 +26,7 @@ namespace Fortress.Core.Services.Messages
 		public CreatePatrolRequest Request { get; private set; }
 
 		public string RunName { get; set; } = string.Empty;
+		public string SystemName { get; set; } = string.Empty;
 		public string SourceFolderUri { get; set; } = string.Empty;
 
 		public List<PatrolFolder> Folders { get; set; } = new List<PatrolFolder>();
@@ -34,6 +35,7 @@ namespace Fortress.Core.Services.Messages
 		public CreatePatrolExecute(CreatePatrolRequest request)
 		{
 			Request = request;
+			SystemName = Environment.MachineName;
 		}
 	}
 }

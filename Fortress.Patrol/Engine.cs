@@ -60,6 +60,9 @@ namespace Fortress.Patrol
 				var execute = createPatrol.Validate(request);
 				createPatrol.Prepare(execute);
 				createPatrol.Process(execute);
+				createPatrol.Output(execute);
+				createPatrol.Report(execute);
+				createPatrol.Review(execute);
 			}
 			catch (Exception ex)
 			{

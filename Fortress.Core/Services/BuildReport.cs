@@ -9,7 +9,7 @@ using Fortress.Core.Entities;
 
 namespace Fortress.Core.Services
 {
-	public sealed class MakeReport : IDisposable
+	public sealed class BuildReport : IDisposable
 	{
 		private const string PercentFormat = "#0.0%";
 		private const string NumberFormat = "###,###,##0";
@@ -21,7 +21,7 @@ namespace Fortress.Core.Services
 		private readonly ExcelWorksheet _folders;
 		private readonly ExcelWorksheet _files;
 
-		public MakeReport()
+		public BuildReport()
 		{
 			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 			_package = new ExcelPackage();

@@ -22,7 +22,7 @@ namespace Fortress.Core.Services.Messages
 	public abstract class BaseExecute
 	{
 		public DateTime StartUtc { get; private set; }
-		public DateTime? FinishUtc { get; }
+		public DateTime? FinishUtc { get; set; }
 
 		public bool CreateLog { get; set; }
 		public bool CreateOutput { get; set; }

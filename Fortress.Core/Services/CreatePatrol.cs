@@ -191,15 +191,16 @@ namespace Fortress.Core.Services
 			return exceptions;
 		}
 
-		public void Process(CreatePatrolExecute execute)
+		public bool Process(CreatePatrolExecute execute)
 		{
 			// show prep in console
 			_console?.WriteLine(ConsoleSection.Pastel(Color.Cyan));
 			_console?.WriteLine($"Process: {execute.SourceFolderUri}".Pastel(Color.Cyan));
 			_console?.WriteLine(ConsoleDivider.Pastel(Color.Cyan));
 
-			long totalDataProcessed = 0;
-			var stopwatch = new Stopwatch();
+			//long totalDataProcessed = 0;
+			//var stopwatch = new Stopwatch();
+			var exceptions = new List<Exception>();
 			using (var hasher = new GetHash())
 			{
 				// prepare totals
@@ -216,11 +217,11 @@ namespace Fortress.Core.Services
 						foreach (var file in folder.PatrolFiles.OrderBy(x => x.Name))
 						{
 							fileIndex++;
-							totalDataProcessed += file.Size;
+							//totalDataProcessed += file.Size;
 
 							_console?.Write($"[{fileIndex} of {fileCount}] ".Pastel(Color.Gray));
 							_console?.Write($"{file.Name} -> ");
-							_console?.Write($"{file.Size:###,###,###,###,##0}".Pastel(Color.LightYellow));
+							_console?.Write($"{file.Size:###,###,###,###,##0}".Pastel(Color.LightGreen));
 
 							if (execute.Request.IndexOnly)
 							{
@@ -240,14 +241,10 @@ namespace Fortress.Core.Services
 								{
 									file.Status = FileStatus.Error;
 									execute.Exceptions.Add(ex);
+									exceptions.Add(ex);
 
 									// log exception and re-throw if not silent
-									if (!execute.Request.StopOnError)
-									{
-										_console?.WriteLine($"UnauthorizedAccessException".Pastel(Color.Red));
-									}
-									else
-										throw;
+									if (execute.Request.StopOnError) throw;
 								}
 							}
 						}
@@ -257,33 +254,166 @@ namespace Fortress.Core.Services
 				}
 			}
 
-			stopwatch.Stop();
-			var time = stopwatch.Elapsed;
-			var mb = 1.0 * totalDataProcessed / 1024.0 / 1024.0;
-			var gb = 1.0 * mb / 1024;
-			var tb = 1.0 * gb / 1024.0;
-			var gbh = 1.0 * gb / time.TotalHours;
-			var mbs = 1.0 * mb / time.TotalMinutes;
+			foreach(var ex in exceptions)
+			{
 
-			_console?.WriteLine(ConsoleSection.Pastel(Color.Cyan));
-			_console?.WriteLine($"BYTES:\t{totalDataProcessed.ToString(WholeNumberFormat)} = {mb.ToString(SingleDecimalFormat)} MB = {gb.ToString(SingleDecimalFormat)} GB = {tb.ToString(SingleDecimalFormat)} TB".Pastel(Color.Cyan));
-			_console?.WriteLine($"TIME:\t{time:hh\\:mm\\:ss} H:M:S = {time.TotalSeconds.ToString(WholeNumberFormat)} SEC".Pastel(Color.Cyan));
-			_console?.WriteLine($"RATE:\t{gbh.ToString(SingleDecimalFormat)} GB/HOUR = {mbs.ToString(SingleDecimalFormat)} MB/SEC".Pastel(Color.Cyan));
-			_console?.WriteLine(ConsoleDivider.Pastel(Color.Cyan));
+			}
+
+			// show expcetions
+			var verbose = execute.Request.VerboseLog;
+			if (exceptions.Any())
+			{
+				_console?.WriteLine();
+				_console?.WriteLine(ConsoleFooter.Pastel(Color.Red));
+				_console?.WriteLine($"Exceptions: {execute.Exceptions.Count}".Pastel(Color.Red));
+				foreach (var ex in execute.Exceptions)
+				{
+					_console?.WriteLine(ConsoleDivider.Pastel(Color.Red));
+					ShowException(_console, ex, verbose);
+				}
+			}
+
+			// return success if no exceptions
+			return exceptions.Any();
 		}
 
 		public void Output(CreatePatrolExecute execute)
 		{
+			if (!execute.CreateOutput) return;
+			
+			var color = Color.Salmon;
+			_console?.WriteLine(ConsoleSection.Pastel(color));
+			_console?.WriteLine($"Output: {execute.OutputFileUri}".Pastel(color));
 
+			// create md5/sha512 output file header
+			using (StreamWriter output = File.CreateText(execute.OutputFileUri))
+			{
+				output.WriteLine($"# Generated {execute.Request.HashType} with Patrol at UTC {DateTime.UtcNow}");
+				output.WriteLine($"# https://github.com/DesignedSimplicity/Expedition/");
+				output.WriteLine($"# --------------------------------------------------");
+				output.WriteLine();
+				output.WriteLine($"# System:\t{execute.SystemName}");
+				output.WriteLine($"# Source:\t{execute.SourceFolderUri}");
+				//output.WriteLine($"# Target Folder: {execute.PatrolSource.TargetFolderUri}");
+				output.WriteLine($"# Hash:\t\t{execute.Request.HashType}");
+				output.WriteLine($"# Size:\t\t{execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}");
+				output.WriteLine($"# Files:\t{execute.Files.Count.ToString(WholeNumberFormat)}");
+				output.WriteLine($"# Folders:\t{execute.Folders.Count.ToString(WholeNumberFormat)}");
+				if (execute.Exceptions.Count() > 0) output.WriteLine($"# Errors:\t{execute.Exceptions.Count().ToString(WholeNumberFormat)}");
+				output.WriteLine($"# --------------------------------------------------");
+
+				// prepare for files output
+				var maxFiles = execute.Folders.Max(x => x.PatrolFiles.Count);
+				var filesFormat = GetPaddedNumberFormat(maxFiles);
+				var maxSizes = execute.Folders.Max(x => x.PatrolFiles.Sum(y => y.Size));
+				var sizesFormat = GetPaddedNumberFormat(maxSizes);
+				foreach (var folder in execute.Folders.OrderBy(x => x.Uri))
+				{
+					output.WriteLine($"# Files: {String.Format(filesFormat, folder.PatrolFiles.Count)}\tSize: {String.Format(sizesFormat, folder.TotalFileSize)}\t\t{folder.Uri}");
+				}
+				output.WriteLine($"# --------------------------------------------------");
+				output.WriteLine();
+
+				// format and write checksum to stream
+				foreach (var file in execute.Files.OrderBy(x => x.Uri))
+				{
+					var path = file.Uri;// execute.GetOuputPath(file.Uri);
+					output.WriteLine($"{((execute.Request.HashType == HashType.Md5) ? file.Md5 : file.Sha512)} {path}");
+				}
+
+				// clean up output file
+				output.Flush();
+				output.Close();
+
+				// show summary
+				//_console?.WriteLine(ConsoleDivider.Pastel(color));
+				//_console?.WriteLine($"Saved {execute.Files.Count().ToString(WholeNumberFormat)} {execute.Request.HashType} file hashes".Pastel(color));
+				_console?.WriteLine(ConsoleDivider.Pastel(color));
+			}
 		}
 
 		public void Report(CreatePatrolExecute execute)
 		{
+			if (!execute.CreateReport) return;
+			
+			var color = Color.Violet;
+			_console?.WriteLine(ConsoleSection.Pastel(color));
+			_console?.WriteLine($"Report: {execute.ReportFileUri}".Pastel(color));
 
+			// set up reporting
+			using (var report = new BuildReport())
+			{
+				// format and write checksum to stream
+				//report.PopulateSource(execute.PatrolSource);
+				report.PopulateFolders(execute.Folders.OrderBy(x => x.Uri));
+				report.PopulateFiles(execute.Files.OrderBy(x => x.Uri));
+
+				// close out report
+				report.SaveAs(execute.ReportFileUri);
+				report.Dispose();
+			}
+
+			// show summary
+			//_console?.WriteLine(ConsoleDivider.Pastel(color));
+			//_console?.WriteLine($"Saved {execute.Files.Count().ToString(WholeNumberFormat)} files in {execute.Folders.Count().ToString(WholeNumberFormat)} folders".Pastel(color));
+			_console?.WriteLine(ConsoleDivider.Pastel(color));
 		}
 
 		public void Review(CreatePatrolExecute execute)
 		{
+			var color = Color.DeepPink;
+			_console?.WriteLine(ConsoleSection.Pastel(color));
+			_console?.WriteLine($"Review: {execute.LogFileUri}".Pastel(color));
+			_console?.WriteLine(ConsoleDivider.Pastel(color));
+
+			execute.FinishUtc = DateTime.UtcNow;
+			var time = execute.FinishUtc.Value - execute.StartUtc;
+			
+			double bytes = execute.Files.Sum(x => x.Size);
+			var kilobytes = bytes / 1024.0;
+			var megabytes = kilobytes / 1024.0;
+			var gigabytes = megabytes / 1024.0;
+			var terabytes = gigabytes / 1024.0;
+
+			var megabytePerMinute = megabytes / time.TotalMinutes;
+			var gigabytePerHour = gigabytes / time.TotalHours;
+
+			var format1 = GetPaddedNumberFormat(Convert.ToInt64(Math.Max(bytes, time.TotalMilliseconds)));
+			var format2 = GetPaddedNumberFormat(Convert.ToInt64(Math.Max(kilobytes, time.TotalSeconds)));
+			var format3 = GetPaddedNumberFormat(Convert.ToInt64(Math.Max(megabytes, time.TotalMinutes)), 1);
+			var format4 = GetPaddedNumberFormat(Convert.ToInt64(Math.Max(gigabytes, time.TotalHours)), 2);
+			var format5 = GetPaddedNumberFormat(Convert.ToInt64(Math.Max(terabytes, time.TotalDays)), 3);
+
+			color = Color.Pink;
+			_console?.Write($"Size:".Pastel(color));
+			_console?.Write($"\t{String.Format(format1, bytes)} Bytes".Pastel(color));
+			_console?.Write($"\t{String.Format(format2, kilobytes)} Kilobytes".Pastel(color));
+			_console?.Write($"\t{String.Format(format3, megabytes)} Megabytes".Pastel(color));
+			_console?.Write($"\t{String.Format(format4, gigabytes)} Gigabytes".Pastel(color));
+			_console?.Write($"\t{String.Format(format5, terabytes)} Terabytes".Pastel(color));
+			_console?.WriteLine();
+
+			color = Color.LightPink;
+			_console?.Write($"Time:".Pastel(color));
+			_console?.Write($"\t{String.Format(format1, time.TotalMilliseconds)} Msec".Pastel(color));
+			_console?.Write($"\t{String.Format(format2, time.TotalSeconds)} Seconds".Pastel(color));
+			_console?.Write($"\t{String.Format(format3, time.TotalMinutes)} Minutes".Pastel(color));
+			_console?.Write($"\t{String.Format(format4, time.TotalHours)} Hours".Pastel(color));
+			_console?.Write($"\t{String.Format(format5, time.TotalDays)} Days".Pastel(color));
+			_console?.WriteLine();
+
+			color = Color.HotPink;
+			_console?.Write($"Rate:".Pastel(color));
+			_console?.Write($"\t{String.Format(format1, 1.0 * bytes / time.TotalMilliseconds)} B/Ms".Pastel(color));
+			_console?.Write($"\t{String.Format(format2, 1.0 * kilobytes / time.TotalSeconds)} KB/Sec".Pastel(color));
+			_console?.Write($"\t{String.Format(format3, 1.0 * megabytes / time.TotalMinutes)} MB/Min".Pastel(color));
+			_console?.Write($"\t{String.Format(format4, 1.0 * gigabytes / time.TotalHours)} GB/Hour".Pastel(color));
+			_console?.Write($"\t{String.Format(format5, 1.0 * terabytes / time.TotalDays)} TB/Day".Pastel(color));
+			_console?.WriteLine();
+
+			//_console?.WriteLine($"Size:\t{bytes.ToString(WholeNumberFormat)} Bytes  = {megabytes.ToString(SingleDecimalFormat)} MB = {gigabytes.ToString(DoubleDecimalFormat)} GB = {terabytes.ToString(TripleDecimalFormat)} TB".Pastel(color));
+			//_console?.WriteLine($"Time:\t{time:hh\\:mm\\:ss} H:M:S = {Math.Floor(time.TotalSeconds).ToString(WholeNumberFormat)} SEC".Pastel(color));
+			//_console?.WriteLine($"Rate:\t{gigabytePerHour.ToString(DoubleDecimalFormat)} GB/HOUR = {megabytePerMinute.ToString(DoubleDecimalFormat)} MB/MIN".Pastel(color));
 		}
 
 		public void Finish()
