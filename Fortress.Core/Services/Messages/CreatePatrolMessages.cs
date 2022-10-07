@@ -38,4 +38,14 @@ namespace Fortress.Core.Services.Messages
 			SystemName = Environment.MachineName;
 		}
 	}
+
+	public class CreatePatrolReview : BaseReview
+	{
+		public CreatePatrolExecute Execute { get; private set; }
+
+		public CreatePatrolReview(CreatePatrolExecute execute)
+		{
+			Execute = execute;
+		}
+	}
 }

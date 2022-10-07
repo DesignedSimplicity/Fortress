@@ -40,59 +40,10 @@ namespace Fortress.Core.Services
 			_log?.Dispose();
 		}
 
-		public CreatePatrolExecute Validate(CreatePatrolRequest request)
+		public CreatePatrolExecute Prepare(CreatePatrolRequest request)
 		{
-			var execute = new CreatePatrolExecute(request);
+			var execute = Validate(request);
 
-			// directory is accessible
-			var dir = new DirectoryInfo(String.IsNullOrWhiteSpace(request.DirectoryUri) ? Directory.GetCurrentDirectory() : request.DirectoryUri);
-			if (!dir.Exists) throw new DirectoryNotFoundException($"Target folder '{dir.FullName}' does not exist or is not accessible");
-			var uri = execute.SourceFolderUri = PathUtils.FixUri(dir.FullName, true);
-
-			// output name is valid
-			string name = request.NamePrefix ?? "";
-			if (!String.IsNullOrEmpty(name) && !PathUtils.IsValidFilename(name)) throw new ArgumentOutOfRangeException($"Name prefix {name} is not valid");
-			name += $"_{execute.StartUtc:yyyyMMdd}-{execute.StartUtc:HHmmss}";
-			execute.RunName = name;
-
-			// ensure output file is accessible
-			if (!request.IndexOnly)
-			{
-				execute.CreateOutput = true;
-				execute.OutputFileUri = Path.Combine(uri, name + "." + request.HashType.ToString().ToLowerInvariant());
-				if (File.Exists(execute.OutputFileUri)) throw new IOException($"Output file '{execute.OutputFileUri}' already exists");				
-			}
-
-			// ensure log file is accessible
-			if (request.LogOutput)
-			{
-				execute.CreateLog = true;
-				execute.LogFileUri = Path.Combine(uri, name + LogFileExtension);
-				if (File.Exists(execute.LogFileUri)) throw new IOException($"Log file '{execute.LogFileUri}' already exists");
-			}
-
-			// ensure report file is accessible
-			if (request.CreateReport)
-			{
-				execute.CreateReport = true;
-				execute.ReportFileUri = Path.Combine(uri, name + ReportFileExtension);
-				if (File.Exists(execute.ReportFileUri)) throw new IOException($"Report file '{execute.ReportFileUri}' already exists");
-			}
-
-			// show result in console
-			_console?.WriteLine(ConsoleDivider);
-			_console?.WriteLine($"RunName: {execute.RunName}");
-			_console?.WriteLine($"SourceFolderUri: {execute.SourceFolderUri}");
-			_console?.WriteLine($"LogFileUri: {execute.LogFileUri}");
-			_console?.WriteLine($"OutputFileUri: {execute.OutputFileUri}");
-			_console?.WriteLine($"ReportFileUri: {execute.ReportFileUri}");
-
-			// return execute package
-			return execute;
-		}
-
-		public bool Prepare(CreatePatrolExecute execute)
-		{
 			// show prep in console
 			_console?.WriteLine(ConsoleSection.Pastel(Color.Orange));
 			_console?.WriteLine($"Prepare: {execute.SourceFolderUri}".Pastel(Color.Orange));
@@ -188,19 +139,71 @@ namespace Fortress.Core.Services
 			}
 
 			// return success if no exceptions
-			return exceptions;
+			return execute;
 		}
 
-		public bool Process(CreatePatrolExecute execute)
+		private CreatePatrolExecute Validate(CreatePatrolRequest request)
+		{
+			var execute = new CreatePatrolExecute(request);
+
+			// directory is accessible
+			var dir = new DirectoryInfo(String.IsNullOrWhiteSpace(request.DirectoryUri) ? Directory.GetCurrentDirectory() : request.DirectoryUri);
+			if (!dir.Exists) throw new DirectoryNotFoundException($"Target folder '{dir.FullName}' does not exist or is not accessible");
+			var uri = execute.SourceFolderUri = PathUtils.FixUri(dir.FullName, true);
+
+			// output name is valid
+			string name = request.NamePrefix ?? "";
+			if (!String.IsNullOrEmpty(name) && !PathUtils.IsValidFilename(name)) throw new ArgumentOutOfRangeException($"Name prefix {name} is not valid");
+			name += $"_{execute.StartUtc:yyyyMMdd}-{execute.StartUtc:HHmmss}";
+			execute.RunName = name;
+
+			// ensure output file is accessible
+			if (!request.IndexOnly)
+			{
+				execute.CreateOutput = true;
+				execute.OutputFileUri = Path.Combine(uri, name + "." + request.HashType.ToString().ToLowerInvariant());
+				if (File.Exists(execute.OutputFileUri)) throw new IOException($"Output file '{execute.OutputFileUri}' already exists");
+			}
+
+			// ensure log file is accessible
+			if (request.LogOutput)
+			{
+				execute.CreateLog = true;
+				execute.LogFileUri = Path.Combine(uri, name + LogFileExtension);
+				if (File.Exists(execute.LogFileUri)) throw new IOException($"Log file '{execute.LogFileUri}' already exists");
+			}
+
+			// ensure report file is accessible
+			if (request.CreateReport)
+			{
+				execute.CreateReport = true;
+				execute.ReportFileUri = Path.Combine(uri, name + ReportFileExtension);
+				if (File.Exists(execute.ReportFileUri)) throw new IOException($"Report file '{execute.ReportFileUri}' already exists");
+			}
+
+			// show result in console
+			_console?.WriteLine(ConsoleDivider);
+			_console?.WriteLine($"RunName: {execute.RunName}");
+			_console?.WriteLine($"SourceFolderUri: {execute.SourceFolderUri}");
+			_console?.WriteLine($"LogFileUri: {execute.LogFileUri}");
+			_console?.WriteLine($"OutputFileUri: {execute.OutputFileUri}");
+			_console?.WriteLine($"ReportFileUri: {execute.ReportFileUri}");
+
+			// return execute package
+			return execute;
+		}
+
+		public CreatePatrolReview Execute(CreatePatrolExecute execute)
 		{
 			// show prep in console
 			_console?.WriteLine(ConsoleSection.Pastel(Color.Cyan));
-			_console?.WriteLine($"Process: {execute.SourceFolderUri}".Pastel(Color.Cyan));
+			_console?.WriteLine($"Execute: {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(Color.Cyan));
 			_console?.WriteLine(ConsoleDivider.Pastel(Color.Cyan));
 
 			//long totalDataProcessed = 0;
 			//var stopwatch = new Stopwatch();
 			var exceptions = new List<Exception>();
+			var verbose = execute.Request.VerboseLog;
 			using (var hasher = new GetHash())
 			{
 				// prepare totals
@@ -209,38 +212,46 @@ namespace Fortress.Core.Services
 				foreach (var folder in execute.Folders.OrderBy(x => x.Uri))
 				{
 					var anyFiles = folder.PatrolFiles.Any();
-					_console?.WriteLine($"Folder: {folder.Uri}".Pastel(anyFiles ? Color.Goldenrod : Color.DarkGoldenrod));
+					
+					if (verbose)
+						_console?.WriteLine($"Folder: {folder.Uri}".Pastel(anyFiles ? Color.Goldenrod : Color.DarkGoldenrod));
+					else
+						_console?.Write("*".Pastel(Color.Goldenrod));
+
 					if (anyFiles)
 					{
-						_console?.WriteLine(ConsoleDivider.Pastel(Color.Gray));
+						if (verbose) _console?.WriteLine(ConsoleDivider.Pastel(Color.Gray));
 
 						foreach (var file in folder.PatrolFiles.OrderBy(x => x.Name))
 						{
 							fileIndex++;
-							//totalDataProcessed += file.Size;
 
-							_console?.Write($"[{fileIndex} of {fileCount}] ".Pastel(Color.Gray));
-							_console?.Write($"{file.Name} -> ");
-							_console?.Write($"{file.Size:###,###,###,###,##0}".Pastel(Color.LightGreen));
+							if (verbose)
+							{
+								_console?.Write($"[{fileIndex} of {fileCount}] ".Pastel(Color.Gray));
+								_console?.Write($"{file.Name} -> ");
+								_console?.Write($"{file.Size:###,###,###,###,##0}".Pastel(Color.LightGreen));
+							}
+							else
+								_console?.Write(".".Pastel(Color.Gray));
 
 							if (execute.Request.IndexOnly)
 							{
-								_console?.WriteLine($" LOG".Pastel(Color.GreenYellow));
+								if (verbose) _console?.WriteLine($" LOG".Pastel(Color.GreenYellow));
 							}
 							else
 							{
 								// calculate hash and output hash to log
 								var hashType = execute.Request.HashType;
-								_console?.Write($" {hashType.ToString().Pastel(Color.LightGreen)} = ");
+								if (verbose) _console?.Write($" {hashType.ToString().Pastel(Color.LightGreen)} = ");
 								try
 								{
 									var result = hasher.Calculate(file, hashType);
-									_console?.WriteLine($"{result.HashValue.Pastel(Color.Green)} @ {result.BytesPerMillisecond:###,###,###,###,##0} b/ms".Pastel(Color.Gray));
+									if (verbose) _console?.WriteLine($"{result.HashValue.Pastel(Color.Green)} @ {result.BytesPerMillisecond:###,###,###,###,##0} b/ms".Pastel(Color.Gray));
 								}
 								catch (UnauthorizedAccessException ex)
 								{
 									file.Status = FileStatus.Error;
-									execute.Exceptions.Add(ex);
 									exceptions.Add(ex);
 
 									// log exception and re-throw if not silent
@@ -249,40 +260,103 @@ namespace Fortress.Core.Services
 							}
 						}
 
-						_console?.WriteLine(ConsoleDivider.Pastel(Color.Goldenrod));
+						if (verbose) _console?.WriteLine(ConsoleDivider.Pastel(Color.Goldenrod));
 					}
 				}
 			}
-
-			foreach(var ex in exceptions)
-			{
-
-			}
+			_console?.WriteLine();
 
 			// show expcetions
-			var verbose = execute.Request.VerboseLog;
 			if (exceptions.Any())
 			{
 				_console?.WriteLine();
 				_console?.WriteLine(ConsoleFooter.Pastel(Color.Red));
-				_console?.WriteLine($"Exceptions: {execute.Exceptions.Count}".Pastel(Color.Red));
-				foreach (var ex in execute.Exceptions)
+				_console?.WriteLine($"Exceptions: {exceptions.Count}".Pastel(Color.Red));
+				foreach (var ex in exceptions)
 				{
 					_console?.WriteLine(ConsoleDivider.Pastel(Color.Red));
 					ShowException(_console, ex, verbose);
 				}
 			}
 
-			// return success if no exceptions
-			return exceptions.Any();
+			// return review state
+			var review = new CreatePatrolReview(execute);
+			review.Exceptions.AddRange(exceptions);
+			return review;
 		}
 
-		public void Output(CreatePatrolExecute execute)
+		public void Review(CreatePatrolReview review)
+		{
+			var execute = review.Execute;
+
+			var color = Color.DeepPink;
+			_console?.WriteLine(ConsoleSection.Pastel(color));
+			_console?.WriteLine($"Review: {execute.LogFileUri}".Pastel(color));
+
+			Output(execute);
+			Report(execute);
+
+			_console?.WriteLine(ConsoleDivider.Pastel(color));
+
+			var time = review.FinishUtc - execute.StartUtc;
+			
+			double bytes = execute.Files.Sum(x => x.Size);
+			var kilobytes = bytes / 1024.0;
+			var megabytes = kilobytes / 1024.0;
+			var gigabytes = megabytes / 1024.0;
+			var terabytes = gigabytes / 1024.0;
+
+			var bpms = 1.0 * bytes / time.TotalMilliseconds;
+			var kbps = 1.0 * kilobytes / time.TotalSeconds;
+			var mbpm = 1.0 * megabytes / time.TotalMinutes;
+			var gbph = 1.0 * gigabytes / time.TotalHours;
+			var tbpd = 1.0 * terabytes / time.TotalDays;
+
+			var format1 = GetPaddedNumberFormat(GetMaxForFormat(bytes, time.TotalMilliseconds, bpms));
+			var format2 = GetPaddedNumberFormat(GetMaxForFormat(kilobytes, time.TotalSeconds, kbps));
+			var format3 = GetPaddedNumberFormat(GetMaxForFormat(megabytes, time.TotalMinutes, mbpm), 1);
+			var format4 = GetPaddedNumberFormat(GetMaxForFormat(gigabytes, time.TotalHours, gbph), 2);
+			var format5 = GetPaddedNumberFormat(GetMaxForFormat(terabytes, time.TotalDays, tbpd), 3);
+
+			color = Color.Pink;
+			_console?.Write($"Size:".Pastel(color));
+			_console?.Write($"\t{String.Format(format1, bytes)} Bytes    ".Pastel(color));
+			_console?.Write($"\t{String.Format(format2, kilobytes)} Kilobytes".Pastel(color));
+			_console?.Write($"\t{String.Format(format3, megabytes)} Megabytes".Pastel(color));
+			_console?.Write($"\t{String.Format(format4, gigabytes)} Gigabytes".Pastel(color));
+			_console?.Write($"\t{String.Format(format5, terabytes)} Terabytes".Pastel(color));
+			_console?.WriteLine();
+
+			color = Color.LightPink;
+			_console?.Write($"Time:".Pastel(color));
+			_console?.Write($"\t{String.Format(format1, time.TotalMilliseconds)} Msec     ".Pastel(color));
+			_console?.Write($"\t{String.Format(format2, time.TotalSeconds)} Seconds  ".Pastel(color));
+			_console?.Write($"\t{String.Format(format3, time.TotalMinutes)} Minutes  ".Pastel(color));
+			_console?.Write($"\t{String.Format(format4, time.TotalHours)} Hours    ".Pastel(color));
+			_console?.Write($"\t{String.Format(format5, time.TotalDays)} Days     ".Pastel(color));
+			_console?.WriteLine();
+
+			color = Color.HotPink;
+			_console?.Write($"Rate:".Pastel(color));
+			_console?.Write($"\t{String.Format(format1, bpms)} B/Ms     ".Pastel(color));
+			_console?.Write($"\t{String.Format(format2, kbps)} KB/Sec   ".Pastel(color));
+			_console?.Write($"\t{String.Format(format3, mbpm)} MB/Min   ".Pastel(color));
+			_console?.Write($"\t{String.Format(format4, gbph)} GB/Hour  ".Pastel(color));
+			_console?.Write($"\t{String.Format(format5, tbpd)} TB/Day   ".Pastel(color));
+			_console?.WriteLine();
+
+			_console?.WriteLine(ConsoleDivider.Pastel(color));
+			//_console?.WriteLine($"Size:\t{bytes.ToString(WholeNumberFormat)} Bytes  = {megabytes.ToString(SingleDecimalFormat)} MB = {gigabytes.ToString(DoubleDecimalFormat)} GB = {terabytes.ToString(TripleDecimalFormat)} TB".Pastel(color));
+			//_console?.WriteLine($"Time:\t{time:hh\\:mm\\:ss} H:M:S = {Math.Floor(time.TotalSeconds).ToString(WholeNumberFormat)} SEC".Pastel(color));
+			//_console?.WriteLine($"Rate:\t{gigabytePerHour.ToString(DoubleDecimalFormat)} GB/HOUR = {megabytePerMinute.ToString(DoubleDecimalFormat)} MB/MIN".Pastel(color));
+		}
+
+		private void Output(CreatePatrolExecute execute)
 		{
 			if (!execute.CreateOutput) return;
-			
+
 			var color = Color.Salmon;
-			_console?.WriteLine(ConsoleSection.Pastel(color));
+			//_console?.WriteLine(ConsoleSection.Pastel(color));
 			_console?.WriteLine($"Output: {execute.OutputFileUri}".Pastel(color));
 
 			// create md5/sha512 output file header
@@ -328,16 +402,16 @@ namespace Fortress.Core.Services
 				// show summary
 				//_console?.WriteLine(ConsoleDivider.Pastel(color));
 				//_console?.WriteLine($"Saved {execute.Files.Count().ToString(WholeNumberFormat)} {execute.Request.HashType} file hashes".Pastel(color));
-				_console?.WriteLine(ConsoleDivider.Pastel(color));
+				//_console?.WriteLine(ConsoleDivider.Pastel(color));
 			}
 		}
 
-		public void Report(CreatePatrolExecute execute)
+		private void Report(CreatePatrolExecute execute)
 		{
 			if (!execute.CreateReport) return;
-			
+
 			var color = Color.Violet;
-			_console?.WriteLine(ConsoleSection.Pastel(color));
+			//_console?.WriteLine(ConsoleSection.Pastel(color));
 			_console?.WriteLine($"Report: {execute.ReportFileUri}".Pastel(color));
 
 			// set up reporting
@@ -356,64 +430,7 @@ namespace Fortress.Core.Services
 			// show summary
 			//_console?.WriteLine(ConsoleDivider.Pastel(color));
 			//_console?.WriteLine($"Saved {execute.Files.Count().ToString(WholeNumberFormat)} files in {execute.Folders.Count().ToString(WholeNumberFormat)} folders".Pastel(color));
-			_console?.WriteLine(ConsoleDivider.Pastel(color));
-		}
-
-		public void Review(CreatePatrolExecute execute)
-		{
-			var color = Color.DeepPink;
-			_console?.WriteLine(ConsoleSection.Pastel(color));
-			_console?.WriteLine($"Review: {execute.LogFileUri}".Pastel(color));
-			_console?.WriteLine(ConsoleDivider.Pastel(color));
-
-			execute.FinishUtc = DateTime.UtcNow;
-			var time = execute.FinishUtc.Value - execute.StartUtc;
-			
-			double bytes = execute.Files.Sum(x => x.Size);
-			var kilobytes = bytes / 1024.0;
-			var megabytes = kilobytes / 1024.0;
-			var gigabytes = megabytes / 1024.0;
-			var terabytes = gigabytes / 1024.0;
-
-			var megabytePerMinute = megabytes / time.TotalMinutes;
-			var gigabytePerHour = gigabytes / time.TotalHours;
-
-			var format1 = GetPaddedNumberFormat(Convert.ToInt64(Math.Max(bytes, time.TotalMilliseconds)));
-			var format2 = GetPaddedNumberFormat(Convert.ToInt64(Math.Max(kilobytes, time.TotalSeconds)));
-			var format3 = GetPaddedNumberFormat(Convert.ToInt64(Math.Max(megabytes, time.TotalMinutes)), 1);
-			var format4 = GetPaddedNumberFormat(Convert.ToInt64(Math.Max(gigabytes, time.TotalHours)), 2);
-			var format5 = GetPaddedNumberFormat(Convert.ToInt64(Math.Max(terabytes, time.TotalDays)), 3);
-
-			color = Color.Pink;
-			_console?.Write($"Size:".Pastel(color));
-			_console?.Write($"\t{String.Format(format1, bytes)} Bytes".Pastel(color));
-			_console?.Write($"\t{String.Format(format2, kilobytes)} Kilobytes".Pastel(color));
-			_console?.Write($"\t{String.Format(format3, megabytes)} Megabytes".Pastel(color));
-			_console?.Write($"\t{String.Format(format4, gigabytes)} Gigabytes".Pastel(color));
-			_console?.Write($"\t{String.Format(format5, terabytes)} Terabytes".Pastel(color));
-			_console?.WriteLine();
-
-			color = Color.LightPink;
-			_console?.Write($"Time:".Pastel(color));
-			_console?.Write($"\t{String.Format(format1, time.TotalMilliseconds)} Msec".Pastel(color));
-			_console?.Write($"\t{String.Format(format2, time.TotalSeconds)} Seconds".Pastel(color));
-			_console?.Write($"\t{String.Format(format3, time.TotalMinutes)} Minutes".Pastel(color));
-			_console?.Write($"\t{String.Format(format4, time.TotalHours)} Hours".Pastel(color));
-			_console?.Write($"\t{String.Format(format5, time.TotalDays)} Days".Pastel(color));
-			_console?.WriteLine();
-
-			color = Color.HotPink;
-			_console?.Write($"Rate:".Pastel(color));
-			_console?.Write($"\t{String.Format(format1, 1.0 * bytes / time.TotalMilliseconds)} B/Ms".Pastel(color));
-			_console?.Write($"\t{String.Format(format2, 1.0 * kilobytes / time.TotalSeconds)} KB/Sec".Pastel(color));
-			_console?.Write($"\t{String.Format(format3, 1.0 * megabytes / time.TotalMinutes)} MB/Min".Pastel(color));
-			_console?.Write($"\t{String.Format(format4, 1.0 * gigabytes / time.TotalHours)} GB/Hour".Pastel(color));
-			_console?.Write($"\t{String.Format(format5, 1.0 * terabytes / time.TotalDays)} TB/Day".Pastel(color));
-			_console?.WriteLine();
-
-			//_console?.WriteLine($"Size:\t{bytes.ToString(WholeNumberFormat)} Bytes  = {megabytes.ToString(SingleDecimalFormat)} MB = {gigabytes.ToString(DoubleDecimalFormat)} GB = {terabytes.ToString(TripleDecimalFormat)} TB".Pastel(color));
-			//_console?.WriteLine($"Time:\t{time:hh\\:mm\\:ss} H:M:S = {Math.Floor(time.TotalSeconds).ToString(WholeNumberFormat)} SEC".Pastel(color));
-			//_console?.WriteLine($"Rate:\t{gigabytePerHour.ToString(DoubleDecimalFormat)} GB/HOUR = {megabytePerMinute.ToString(DoubleDecimalFormat)} MB/MIN".Pastel(color));
+			//_console?.WriteLine(ConsoleDivider.Pastel(color));
 		}
 
 		public void Finish()

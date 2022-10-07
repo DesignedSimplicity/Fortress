@@ -18,9 +18,9 @@ namespace Fortress.Core.Services
 		protected const string DoubleDecimalFormat = WholeNumberFormat + ".00";
 		protected const string TripleDecimalFormat = WholeNumberFormat + ".000";
 
-		protected const string ConsoleSection = "================================================================================";
-		protected const string ConsoleDivider = "--------------------------------------------------------------------------------";
-		protected const string ConsoleFooter = "################################################################################";
+		protected const string ConsoleSection = "====================================================================================================";
+		protected const string ConsoleDivider = "----------------------------------------------------------------------------------------------------";
+		protected const string ConsoleFooter = "####################################################################################################";
 
 
 		protected void ShowException(TextWriter? console, Exception ex, bool verbose = false)
@@ -42,6 +42,11 @@ namespace Fortress.Core.Services
 				for (int i = 0; i < decimals; i++) format += "0";
 			}
 			return "{0," + (length + extra).ToString("0") + ":" + format + "}";
+		}
+
+		protected long GetMaxForFormat(double a, double b, double c)
+		{
+			return Convert.ToInt64(Math.Max(Math.Max(Math.Round(a), Math.Round(b)), Math.Round(c)));
 		}
 	}
 }

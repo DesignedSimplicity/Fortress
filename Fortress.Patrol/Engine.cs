@@ -57,17 +57,14 @@ namespace Fortress.Patrol
 			var createPatrol = new CreatePatrol(Console.Out);
 			try
 			{				
-				var execute = createPatrol.Validate(request);
-				createPatrol.Prepare(execute);
-				createPatrol.Process(execute);
-				createPatrol.Output(execute);
-				createPatrol.Report(execute);
-				createPatrol.Review(execute);
+				var execute = createPatrol.Prepare(request);
+				var review = createPatrol.Execute(execute);
+				createPatrol.Review(review);
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine("");
-				Console.WriteLine("################################################################################".Pastel(Color.Red));
+				Console.WriteLine("####################################################################################################".Pastel(Color.Red));
 				Console.WriteLine($"EXCEPTION: {ex.Message}".Pastel(Color.Red));
 				Console.WriteLine(ex.ToString().Pastel(Color.DarkRed));
 			}

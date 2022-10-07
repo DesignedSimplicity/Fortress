@@ -22,7 +22,6 @@ namespace Fortress.Core.Services.Messages
 	public abstract class BaseExecute
 	{
 		public DateTime StartUtc { get; private set; }
-		public DateTime? FinishUtc { get; set; }
 
 		public bool CreateLog { get; set; }
 		public bool CreateOutput { get; set; }
@@ -38,6 +37,18 @@ namespace Fortress.Core.Services.Messages
 		public BaseExecute()
 		{
 			StartUtc = DateTime.UtcNow;
+		}
+	}
+
+	public abstract class BaseReview
+	{
+		public DateTime FinishUtc { get; set; }
+
+		public List<Exception> Exceptions { get; set; } = new List<Exception>();
+
+		public BaseReview()
+		{
+			FinishUtc = DateTime.UtcNow;
 		}
 	}
 }
