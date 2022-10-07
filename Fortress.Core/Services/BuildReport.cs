@@ -61,64 +61,71 @@ namespace Fortress.Core.Services
 		{
 			var row = 1;
 			var col = 1;
-			_sources.Cells[row, col++].Value = "ExId";
-			_sources.Cells[row, col++].Value = "Guid";
+			_sources.Cells[row, col++].Value = "SourceId";
+			_sources.Cells[row, col++].Value = "SourceGuid";
 			_sources.Cells[row, col++].Value = "SystemName";
-			_sources.Cells[row, col++].Value = "PatrolName";
 			_sources.Cells[row, col++].Value = "PatrolType";
-			_sources.Cells[row, col++].Value = "HashType";
-			_sources.Cells[row, col++].Value = "SourcePatrolUri";
-			_sources.Cells[row, col++].Value = "TargetFolderUri";
+			_sources.Cells[row, col++].Value = "PatrolName";
+			_sources.Cells[row, col++].Value = "PatrolFileUri";
+			_sources.Cells[row, col++].Value = "PatrolFolderUri";
 			_sources.Cells[row, col++].Value = "TotalFileSize";
 			_sources.Cells[row, col++].Value = "TotalFileCount";
 			_sources.Cells[row, col++].Value = "TotalFolderCount";
 			_sources.Cells[row, col++].Value = "TotalSeconds";
 			_sources.Cells[row, col++].Value = "CreatedUTC";
 			_sources.Cells[row, col++].Value = "UpdatedUTC";
+			_sources.Cells[row, col++].Value = "DeclaredUTC";
+			_sources.Cells[row, col++].Value = "VerifiedUTC";
 
 			foreach (var source in sources)
 			{
 				row++;
 				col = 1;
 				_sources.Cells[row, col++].Value = row - 1;
-				/*
 				_sources.Cells[row, col++].Value = source.Guid.ToString();
 				_sources.Cells[row, col++].Value = source.SystemName;
+				_sources.Cells[row, col++].Value = source.PatrolType.ToString();
 				_sources.Cells[row, col++].Value = source.PatrolName;
-				_sources.Cells[row, col++].Value = source.SourceType.ToString();
-				_sources.Cells[row, col++].Value = source.HashType.ToString();
-				_sources.Cells[row, col++].Value = source.SourcePatrolUri;
-				_sources.Cells[row, col++].Value = source.TargetFolderUri;
-				_sources.Cells[row, col++].Value = source.TotalFileSize;
-				_sources.Cells[row, col++].Value = source.TotalFileCount;
-				_sources.Cells[row, col++].Value = source.TotalFolderCount;
-				_sources.Cells[row, col++].Value = source.TotalSeconds;
-				_sources.Cells[row, col++].Value = source.Created;
-				_sources.Cells[row, col++].Value = source.Updated;
-				*/
+				_sources.Cells[row, col++].Value = source.PatrolFileUri;
+				_sources.Cells[row, col++].Value = source.PatrolFolderUri;
+				_sources.Cells[row, col++].Value = source.AllFiles.Sum(x => x.Size);
+				_sources.Cells[row, col++].Value = source.AllFiles.Count;
+				_sources.Cells[row, col++].Value = source.AllFolders.Count;
+				_sources.Cells[row, col++].Value = source.ElapsedTime.TotalSeconds;
+				_sources.Cells[row, col++].Value = source.CreatedUtc;
+				_sources.Cells[row, col++].Value = source.UpdatedUtc;
+				//_sources.Cells[row, col++].Value = source.DeclaredUTC;
+				//_sources.Cells[row, col++].Value = source.VerifiedUTC;
 			}
 
 			_sources.Column(1).Style.Numberformat.Format = NumberFormat;
+			_sources.Column(8).Style.Numberformat.Format = NumberFormat;
 			_sources.Column(9).Style.Numberformat.Format = NumberFormat;
 			_sources.Column(10).Style.Numberformat.Format = NumberFormat;
 			_sources.Column(11).Style.Numberformat.Format = NumberFormat;
-			_sources.Column(12).Style.Numberformat.Format = NumberFormat;
+			_sources.Column(12).Style.Numberformat.Format = DateFormat;
 			_sources.Column(13).Style.Numberformat.Format = DateFormat;
 			_sources.Column(14).Style.Numberformat.Format = DateFormat;
+			_sources.Column(15).Style.Numberformat.Format = DateFormat;
+
+			// auto size columns
+			AutoFitColumns(_sources, 4, 15);
 		}
 
 		public void PopulateFolders(IEnumerable<PatrolFolder> folders)
 		{
 			var row = 1;
 			var col = 1;
-			_folders.Cells[row, col++].Value = "ExId";
-			_folders.Cells[row, col++].Value = "Guid";
-			_folders.Cells[row, col++].Value = "FullUri";
+			_folders.Cells[row, col++].Value = "FolderId";
+			_folders.Cells[row, col++].Value = "FolderGuid";
+			_folders.Cells[row, col++].Value = "FolderUri";
 			_folders.Cells[row, col++].Value = "DirectoryName";
 			_folders.Cells[row, col++].Value = "TotalFileCount";
 			_folders.Cells[row, col++].Value = "TotalFileSize";
 			_folders.Cells[row, col++].Value = "CreatedUTC";
 			_folders.Cells[row, col++].Value = "UpdatedUTC";
+			_folders.Cells[row, col++].Value = "DeclaredUTC";
+			_folders.Cells[row, col++].Value = "VerifiedUTC";
 
 			foreach (var folder in folders)
 			{
@@ -130,8 +137,10 @@ namespace Fortress.Core.Services
 				_folders.Cells[row, col++].Value = folder.Name;
 				_folders.Cells[row, col++].Value = folder.PatrolFiles.Count;
 				_folders.Cells[row, col++].Value = folder.TotalFileSize;
-				_folders.Cells[row, col++].Value = folder.Created;
-				_folders.Cells[row, col++].Value = folder.Updated;
+				_folders.Cells[row, col++].Value = folder.CreatedUtc;
+				_folders.Cells[row, col++].Value = folder.UpdatedUtc;
+				//_folders.Cells[row, col++].Value = folder.DeclaredUTC;
+				//_folders.Cells[row, col++].Value = folder.VerifiedUTC;
 			}
 
 			_folders.Column(1).Style.Numberformat.Format = NumberFormat;
@@ -139,17 +148,22 @@ namespace Fortress.Core.Services
 			_folders.Column(6).Style.Numberformat.Format = NumberFormat;
 			_folders.Column(7).Style.Numberformat.Format = DateFormat;
 			_folders.Column(8).Style.Numberformat.Format = DateFormat;
+			_folders.Column(9).Style.Numberformat.Format = DateFormat;
+			_folders.Column(10).Style.Numberformat.Format = DateFormat;
+
+			// auto size columns
+			AutoFitColumns(_folders, 4, 10);
 		}
 
 		public void PopulateFiles(IEnumerable<PatrolFile> files)
 		{
 			var row = 1;
 			var col = 1;
-			_files.Cells[row, col++].Value = "ExId";
-			_files.Cells[row, col++].Value = "Guid";
-			_files.Cells[row, col++].Value = "FullUri";
-			_files.Cells[row, col++].Value = "DirectoryName";
+			_files.Cells[row, col++].Value = "FileId";
+			_files.Cells[row, col++].Value = "FileGuid";
+			_files.Cells[row, col++].Value = "FileUri";
 			_files.Cells[row, col++].Value = "FileName";
+			_files.Cells[row, col++].Value = "DirectoryName";
 			_files.Cells[row, col++].Value = "FileExtension";
 			_files.Cells[row, col++].Value = "FileSize";
 			_files.Cells[row, col++].Value = "FileStatus";
@@ -159,6 +173,7 @@ namespace Fortress.Core.Services
 			_files.Cells[row, col++].Value = "Sha512Status";
 			_files.Cells[row, col++].Value = "CreatedUTC";
 			_files.Cells[row, col++].Value = "UpdatedUTC";
+			_files.Cells[row, col++].Value = "DeclaredUTC";
 			_files.Cells[row, col++].Value = "VerifiedUTC";
 
 			foreach (var file in files)
@@ -168,18 +183,19 @@ namespace Fortress.Core.Services
 				_files.Cells[row, col++].Value = row - 1;
 				_files.Cells[row, col++].Value = file.Guid;
 				_files.Cells[row, col++].Value = file.Uri;
-				_files.Cells[row, col++].Value = ""; // file.Directory;
 				_files.Cells[row, col++].Value = file.Name;
-				_files.Cells[row, col++].Value = ""; // file.Extension;
+				_files.Cells[row, col++].Value = file.DirectoryName;
+				_files.Cells[row, col++].Value = file.Extension;
 				_files.Cells[row, col++].Value = file.Size;
 				_files.Cells[row, col++].Value = file.Status == FileStatus.Default ? "" : file.Status.ToString();
-				_files.Cells[row, col++].Value = ""; // file.Md5;
-				_files.Cells[row, col++].Value = "";//file.Md5Status == HashStatus.Unknown ? "" : file.Md5Status.ToString();
-				_files.Cells[row, col++].Value = ""; // file.Sha512;
-				_files.Cells[row, col++].Value = "";// file.Sha512Status == HashStatus.Unknown ? "" : file.Sha512Status.ToString();
-				_files.Cells[row, col++].Value = file.Created;
-				_files.Cells[row, col++].Value = file.Updated;
-				_files.Cells[row, col++].Value = ""; // file.LastVerified;
+				_files.Cells[row, col++].Value = file.Md5;
+				_files.Cells[row, col++].Value = file.Md5Status == HashStatus.Unknown ? "" : file.Md5Status.ToString();
+				_files.Cells[row, col++].Value = file.Sha512;
+				_files.Cells[row, col++].Value = file.Sha512Status == HashStatus.Unknown ? "" : file.Sha512Status.ToString();
+				_files.Cells[row, col++].Value = file.CreatedUtc;
+				_files.Cells[row, col++].Value = file.UpdatedUtc;
+				//_files.Cells[row, col++].Value = folder.DeclaredUTC;
+				//_files.Cells[row, col++].Value = folder.VerifiedUTC;
 			}
 
 			// do auto formatting
@@ -192,9 +208,10 @@ namespace Fortress.Core.Services
 			_files.Column(13).Style.Numberformat.Format = DateFormat;
 			_files.Column(14).Style.Numberformat.Format = DateFormat;
 			_files.Column(15).Style.Numberformat.Format = DateFormat;
+			_files.Column(16).Style.Numberformat.Format = DateFormat;
 
 			// auto size columns
-			//AutoFitColumns(_col - 1);
+			AutoFitColumns(_files, 4, 16);
 		}
 
 		private void AutoFormatColumns(int count, string format)
@@ -205,11 +222,11 @@ namespace Fortress.Core.Services
 			}
 		}
 
-		private void AutoFitColumns(int count)
+		private void AutoFitColumns(ExcelWorksheet sheet, int start, int end)
 		{
-			for (var index = 1; index <= count; index++)
+			for (var index = start; index <= end; index++)
 			{
-				_files.Column(index).AutoFit();
+				sheet.Column(index).AutoFit();
 			}
 		}
 	}

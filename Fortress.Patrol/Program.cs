@@ -17,7 +17,7 @@ namespace Fortress.Patrol
 
 			var engine = new Engine();
 
-			string[] test = { "create", "-d", @"G:\Others", "-vi", "-s", "*" };
+			string[] test = { "create", "-d", @"N:\Temp", "-r" };
 			var result = parser.ParseArguments<CreateOptions, VerifyOptions>(test)
 				.WithParsed<CreateOptions>(x => engine.Create(x))
 				.WithParsed<VerifyOptions>(x => engine.Verify(x));
@@ -30,3 +30,10 @@ namespace Fortress.Patrol
 
 	}
 }
+//9,619 Msec
+//6,998 Msec
+//7,003 Msec
+
+
+//7,399 Msec
+//7,481 Msec

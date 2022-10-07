@@ -13,10 +13,14 @@ namespace Fortress.Core.Entities
 		public FileInfo? File { get; set; }
 		public string Uri { get; set; }
 		public string Name { get; set; }
+		public string Extension { get; set; }
+
+		public string DirectoryName { get; set; }
+
 		public long Size { get; set; }
 
-		public DateTime Created { get; set; }
-		public DateTime? Updated { get; set; }
+		public DateTime CreatedUtc { get; set; }
+		public DateTime? UpdatedUtc { get; set; }
 
 		public string Md5 = string.Empty;
 		public string Sha512 = string.Empty;
@@ -33,15 +37,22 @@ namespace Fortress.Core.Entities
 			Name = file.Name;
 			File = file;
 			Size = file.Length;
-			Created = file.CreationTimeUtc;
-			Updated = file.LastWriteTimeUtc;
+			Extension = file.Extension;
+			DirectoryName = file.Directory?.Name ?? "";
+
+			CreatedUtc = file.CreationTimeUtc;
+			UpdatedUtc = file.LastWriteTimeUtc;
 		}
 
+		/*
 		public PatrolFile(string uri)
 		{
+			Guid = Guid.NewGuid();
 			Uri = uri;
 			Name = Path.GetFileName(uri);
+			Extension = Path.GetExtension(uri);
 		}
+		*/
 	}
 
 	public enum HashStatus { Unknown = 0, Created = 1, Updated = 2, Verified = 3 }

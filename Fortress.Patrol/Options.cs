@@ -29,7 +29,8 @@ namespace Fortress.Patrol
 		[Option('v', "verbose", HelpText = "Output verbose information")]
 		public bool VerboseLog { get; set; }
 
-		//TODO 
+		[Option('b', "background", HelpText = "Skips all console output")]
+		public bool Background { get; set; }
 	}
 
 	[Verb("create", HelpText = "Creates a new hash report")]

@@ -48,7 +48,16 @@ namespace Fortress.Core.Services.Messages
 		public CreatePatrolReview(CreatePatrolExecute execute)
 		{
 			Execute = execute;
-			Source = new PatrolSource(execute.SourceFolderUri, execute.Folders, execute.Files);
+
+			Source = new PatrolSource(execute.Folders.First(), execute.Folders, execute.Files);
+			
+			Source.SystemName = execute.SystemName;
+			Source.PatrolName = execute.RunName;
+			
+			Source.PatrolType = PatrolType.FileSystem;
+			Source.PatrolFileUri = execute.ReportFileUri;
+			Source.PatrolFolderUri = execute.SourceFolderUri;
+
 			Source.ElapsedTime = FinishUtc - Execute.StartUtc;
 		}
 	}

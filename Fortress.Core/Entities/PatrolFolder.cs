@@ -16,8 +16,8 @@ namespace Fortress.Core.Entities
 		public string Uri { get; set; }
 		public string Name { get; set; }
 
-		public DateTime Created { get; set; }
-		public DateTime? Updated { get; set; }
+		public DateTime CreatedUtc { get; set; }
+		public DateTime? UpdatedUtc { get; set; }
 
 		public List<PatrolFolder> PatrolFolders { get; set; } = new List<PatrolFolder>();
 		public List<PatrolFile> PatrolFiles { get; set; } = new List<PatrolFile>();
@@ -30,8 +30,8 @@ namespace Fortress.Core.Entities
 			Uri = dir.FullName;
 			Name = dir.Name;
 			Directory = dir;
-			Created = dir.CreationTimeUtc;
-			Updated = dir.LastWriteTimeUtc;
+			CreatedUtc = dir.CreationTimeUtc;
+			UpdatedUtc = dir.LastWriteTimeUtc;
 		}
 
 		public PatrolFolder(string uri)

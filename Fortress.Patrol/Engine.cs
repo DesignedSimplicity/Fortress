@@ -21,15 +21,15 @@ namespace Fortress.Patrol
 		public void Create(CreateOptions c)
 		{
 			Console.WriteLine($"Create");
-			Console.WriteLine($"Name: {c.NamePrefix}");
-			Console.WriteLine($"Directory: {c.DirectoryUri}");
-			Console.WriteLine($"Search: {c.SearchFilter}");
-			Console.WriteLine($"Hash: {c.HashType}");
-			Console.WriteLine($"Report: {c.CreateReport}");
-			Console.WriteLine($"Index: {c.IndexOnly}");
-			Console.WriteLine($"Error: {c.StopOnError}");
-			Console.WriteLine($"Flat: {c.FlatFolder}");
-			Console.WriteLine($"Log: {c.LogOutput}");
+			Console.WriteLine($"Name:\t {c.NamePrefix}");
+			Console.WriteLine($"Uri:\t {c.DirectoryUri}");
+			Console.WriteLine($"Search:\t {c.SearchFilter}");
+			Console.WriteLine($"Hash:\t {c.HashType}");
+			Console.WriteLine($"Report:\t {c.CreateReport}");
+			Console.WriteLine($"Index:\t {c.IndexOnly}");
+			Console.WriteLine($"Error:\t {c.StopOnError}");
+			Console.WriteLine($"Flat:\t {c.FlatFolder}");
+			Console.WriteLine($"Log:\t {c.LogOutput}");
 			Console.WriteLine($"Verbose: {c.VerboseLog}");
 
 			bool verbose = c.VerboseLog;
@@ -54,12 +54,24 @@ namespace Fortress.Patrol
 				HashType = c.HashType,
 			};
 
-			var createPatrol = new CreatePatrol(Console.Out);
+			var createPatrol = new CreatePatrol(c.Background ? null : Console.Out);
 			try
-			{				
+			{
+				if (c.Background) Console.WriteLine($"Start:\t {DateTime.Now}");
+
 				var execute = createPatrol.Prepare(request);
+
+				Console.WriteLine("PAUSE");
+				Console.ReadKey();
 				var review = createPatrol.Execute(execute);
+
 				createPatrol.Review(review);
+
+				if (c.Background)
+				{
+					Console.WriteLine($"Done:\t {DateTime.Now}");
+					Console.WriteLine($"Time:\t {review.FinishUtc - execute.StartUtc}");
+				}
 			}
 			catch (Exception ex)
 			{

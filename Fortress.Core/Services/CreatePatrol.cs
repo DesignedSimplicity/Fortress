@@ -1,4 +1,9 @@
-﻿using Fortress.Core.Entities;
+﻿//TODO:
+//Better exception reporting - add to Review section - test all instances - add to excel file
+//Simple vs verbose logging
+
+
+using Fortress.Core.Entities;
 using Fortress.Core.Services;
 using Fortress.Core.Services.Settings;
 using Fortress.Core.Services.Messages;
@@ -230,12 +235,13 @@ namespace Fortress.Core.Services
 								_console?.Write($"{file.Name} -> ");
 								_console?.Write($"{file.Size:###,###,###,###,##0}".Pastel(Color.LightGreen));
 							}
-							else
-								_console?.Write(".".Pastel(Color.Gray));
 
 							if (execute.Request.IndexOnly)
 							{
-								if (verbose) _console?.WriteLine($" LOG".Pastel(Color.GreenYellow));
+								if (verbose) 
+									_console?.WriteLine($" LOG".Pastel(Color.GreenYellow));
+								else
+									_console?.Write(".".Pastel(Color.Goldenrod));
 							}
 							else
 							{
@@ -245,10 +251,15 @@ namespace Fortress.Core.Services
 								try
 								{
 									var result = hasher.Calculate(file, hashType);
-									if (verbose) _console?.WriteLine($"{result.HashValue.Pastel(Color.Green)} @ {result.BytesPerMillisecond:###,###,###,###,##0} b/ms".Pastel(Color.Gray));
+									if (verbose) 
+										_console?.WriteLine($"{result.HashValue.Pastel(Color.Green)} @ {result.BytesPerMillisecond:###,###,###,###,##0} b/ms".Pastel(Color.Gray));
+									else
+										_console?.Write(".".Pastel(Color.Goldenrod));
 								}
-								catch (UnauthorizedAccessException ex)
+								catch (Exception ex)
 								{
+									_console?.Write("!".Pastel(Color.Red));
+
 									file.Status = FileStatus.Error;
 									exceptions.Add(ex);
 
@@ -277,8 +288,6 @@ namespace Fortress.Core.Services
 				}
 			}
 
-			// create source patrol for here
-
 			// return review state
 			var review = new CreatePatrolReview(execute);
 			review.Exceptions.AddRange(exceptions);
@@ -294,23 +303,20 @@ namespace Fortress.Core.Services
 			_console?.WriteLine(ConsoleSection.Pastel(color));
 			_console?.WriteLine($"Review: {execute.LogFileUri}".Pastel(color));
 
-			Output(execute);
-			Report(execute);
+			Output(review);
+			Report(review);
 
-			if (verbose) Verbose(review);
+			if (verbose) Summary(review);
 			
 			_console?.WriteLine(ConsoleDivider.Pastel(color));
-			_console?.WriteLine($"Hash:\t\t{(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(color));
+			_console?.WriteLine($"Mode:\t\tCreate {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(color));
 			_console?.WriteLine($"Time:\t\t{review.Source.ElapsedTime:hh\\:mm\\:ss}".Pastel(color));
 			_console?.WriteLine($"Files:\t\t{execute.Files.Count}".Pastel(color));
 			_console?.WriteLine($"Folders:\t{execute.Folders.Count}".Pastel(color));			
 			_console?.WriteLine(ConsoleFooter.Pastel(color));
-			//_console?.WriteLine($"Size:\t{bytes.ToString(WholeNumberFormat)} Bytes  = {megabytes.ToString(SingleDecimalFormat)} MB = {gigabytes.ToString(DoubleDecimalFormat)} GB = {terabytes.ToString(TripleDecimalFormat)} TB".Pastel(color));
-			//_console?.WriteLine($"Time:\t{time:hh\\:mm\\:ss} H:M:S = {Math.Floor(time.TotalSeconds).ToString(WholeNumberFormat)} SEC".Pastel(color));
-			//_console?.WriteLine($"Rate:\t{gigabytePerHour.ToString(DoubleDecimalFormat)} GB/HOUR = {megabytePerMinute.ToString(DoubleDecimalFormat)} MB/MIN".Pastel(color));
 		}
 
-		private void Verbose(CreatePatrolReview review)
+		private void Summary(CreatePatrolReview review)
 		{
 			var time = review.FinishUtc - review.Execute.StartUtc;
 
@@ -362,8 +368,9 @@ namespace Fortress.Core.Services
 			_console?.WriteLine();
 		}
 
-		private void Output(CreatePatrolExecute execute)
+		private void Output(CreatePatrolReview review)
 		{
+			var execute = review.Execute;
 			if (!execute.CreateOutput) return;
 
 			var color = Color.Violet;
@@ -417,8 +424,9 @@ namespace Fortress.Core.Services
 			}
 		}
 
-		private void Report(CreatePatrolExecute execute)
+		private void Report(CreatePatrolReview review)
 		{
+			var execute = review.Execute;
 			if (!execute.CreateReport) return;
 
 			var color = Color.Violet;
@@ -429,7 +437,7 @@ namespace Fortress.Core.Services
 			using (var report = new BuildReport())
 			{
 				// format and write checksum to stream
-				//report.PopulateSource(execute.PatrolSource);
+				report.PopulateSource(review.Source);
 				report.PopulateFolders(execute.Folders.OrderBy(x => x.Uri));
 				report.PopulateFiles(execute.Files.OrderBy(x => x.Uri));
 
