@@ -8,9 +8,15 @@ namespace Fortress.Core
 {
 	public class PathUtils
 	{
+		private const int _maxPath = 260;
 		private const char _slashChar = '\\';
 		private const string _slashString = @"\";
 		private const string _slashDouble = @"\\";
+
+		public static bool IsMaxPath(string? uri)
+		{
+			return (uri?.Length ?? 0) >= _maxPath;
+		}
 
 		/// <summary>
 		/// Checks if the provided file name is valid for the filesystem

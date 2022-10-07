@@ -1,14 +1,33 @@
-﻿using Fortress.Core.Services.Messages;
+﻿using Fortress.Core.Entities;
+using Fortress.Core.Services;
+using Fortress.Core.Services.Settings;
+using Fortress.Core.Services.Messages;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Fortress.Core.Services
 {
-	public class CreatePatrol : BasePatrol
+	public sealed class CreatePatrol : BasePatrol, IDisposable
 	{
+		private StreamWriter? _log;
+		private readonly FolderNotify? _folderNotify;
+		private readonly FileNotify? _fileNotify;
+
+		public CreatePatrol(FolderNotify? folder, FileNotify? file)
+		{
+			_folderNotify = folder;
+			_fileNotify = file;
+		}
+
+		public void Dispose()
+		{
+			_log?.Dispose();
+		}
+
 		public CreatePatrolExecute Validate(CreatePatrolRequest request)
 		{
 			var execute = new CreatePatrolExecute(request);
@@ -16,12 +35,12 @@ namespace Fortress.Core.Services
 			// directory is accessible
 			var dir = new DirectoryInfo(String.IsNullOrWhiteSpace(request.DirectoryUri) ? Directory.GetCurrentDirectory() : request.DirectoryUri);
 			if (!dir.Exists) throw new DirectoryNotFoundException($"Target folder '{dir.FullName}' does not exist or is not accessible");
-			var uri = execute.SourceFolderUri = PathUtils.FixUri(dir.FullName);
+			var uri = execute.SourceFolderUri = PathUtils.FixUri(dir.FullName, true);
 
 			// output name is valid
 			string name = request.NamePrefix ?? "";
 			if (!String.IsNullOrEmpty(name) && !PathUtils.IsValidFilename(name)) throw new ArgumentOutOfRangeException($"Name prefix {name} is not valid");
-			name += $"_{request.StartUtc:yyyyMMdd}-{request.StartUtc:HHmmss}";
+			name += $"_{execute.StartUtc:yyyyMMdd}-{execute.StartUtc:HHmmss}";
 			execute.RunName = name;
 
 			// ensure output file is accessible
@@ -33,7 +52,7 @@ namespace Fortress.Core.Services
 			}
 
 			// ensure log file is accessible
-			if (request.LogResult)
+			if (request.LogOutput)
 			{
 				execute.CreateLog = true;
 				execute.LogFileUri = Path.Combine(uri, name + LogFileExtension);
@@ -51,33 +70,64 @@ namespace Fortress.Core.Services
 			return execute;
 		}
 
-		public void Prepare()
+		public bool Prepare(CreatePatrolExecute execute)
 		{
+			// prepare output files
+			if (execute.CreateLog) _log = new StreamWriter(execute.LogFileUri);
+
 			// load all directories
-			// load all files in each directory
-				// apply filter criteria
-			// load file details for each file
-			// check all pathnames are < 260
+			var queryFolders = new QueryFolders(new QueryFoldersSettings()
+			{
+				StopOnError = execute.Request.StopOnError,
+				VerboseLog = execute.Request.VerboseLog,
+				Notify = _folderNotify,
+				Output = _log,
+			});
+			execute.Folders = queryFolders.LoadAllFolders(execute.SourceFolderUri).OrderBy(x => x.Uri).ToList();
+			execute.Exceptions.AddRange(queryFolders.Exceptions);
+
+			// load files for each directory
+			var queryFiles = new QueryFiles(new QueryFilesSettings()
+			{
+				StopOnError = execute.Request.StopOnError,
+				VerboseLog = execute.Request.VerboseLog,
+				Notify = _fileNotify,
+				Output = _log,
+			});
+			foreach(var folder in execute.Folders)
+			{
+				var files = queryFiles.LoadFiles(folder.Uri, execute.Request.SearchFilter).OrderBy(x => x.Name).ToList();
+				execute.Files.AddRange(files);
+			}
+			execute.Exceptions.AddRange(queryFiles.Exceptions);
+
+			// return success if no exceptions
+			return execute.Exceptions.Count == 0;
 		}
 
-		public void Execute()
+		public void Execute(CreatePatrolExecute execute)
 		{
 
 		}
 
-		public void Output()
+		public void Output(CreatePatrolExecute execute)
 		{
 
 		}
 
-		public void Report()
+		public void Report(CreatePatrolExecute execute)
 		{
 
 		}
 
-		public void Review()
+		public void Review(CreatePatrolExecute execute)
 		{
+		}
 
+		public void Finish()
+		{
+			_log?.Flush();
+			_log?.Close();
 		}
 	}
 }

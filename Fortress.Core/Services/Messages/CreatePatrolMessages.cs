@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fortress.Core.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -16,22 +17,19 @@ namespace Fortress.Core.Services.Messages
 		public string? SearchFilter { get; set; }
 
 		public bool Recursive { get; set; }
+
+		public bool VerboseLog { get; set; }
 	}
 
-	public class CreatePatrolExecute
+	public class CreatePatrolExecute : BaseExecute
 	{
 		public CreatePatrolRequest Request { get; private set; }
 
 		public string RunName { get; set; } = string.Empty;
 		public string SourceFolderUri { get; set; } = string.Empty;
 
-		public bool CreateLog { get; set; }
-		public bool CreateOutput { get; set; }
-		public bool CreateReport { get; set; }
-
-		public string LogFileUri { get; set; } = string.Empty;
-		public string OutputFileUri { get; set; } = string.Empty;
-		public string ReportFileUri { get; set; } = string.Empty;
+		public List<PatrolFolder> Folders { get; set; } = new List<PatrolFolder>();
+		public List<PatrolFile> Files { get; set; } = new List<PatrolFile>();
 
 		public CreatePatrolExecute(CreatePatrolRequest request)
 		{

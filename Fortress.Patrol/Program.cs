@@ -1,8 +1,7 @@
 ﻿using CommandLine;
-using Fortress.Core.Entities;
-using Fortress.Core.Services;
 using Pastel;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace Fortress.Patrol
 {
@@ -18,14 +17,14 @@ namespace Fortress.Patrol
 
 			var engine = new Engine();
 
-			string[] test = { "create", "-d", @"N:\" };
+			string[] test = { "create", "-d", @"N:\", "-vl" };
 			var result = parser.ParseArguments<CreateOptions, VerifyOptions>(test)
 				.WithParsed<CreateOptions>(x => engine.Create(x))
 				.WithParsed<VerifyOptions>(x => engine.Verify(x));
 
 			if (result.Tag == ParserResultType.NotParsed)
 			{
-				Console.WriteLine($"Error parsing options".Pastel("FF0000"));
+				Console.WriteLine($"Error parsing options".Pastel(Color.Red));
 			}
 		}
 

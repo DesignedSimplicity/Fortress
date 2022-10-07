@@ -25,6 +25,11 @@ namespace Fortress.Patrol
 
 		[Option('i', "index", HelpText = "Records file properties only")]
 		public bool IndexOnly { get; set; }
+
+		[Option('v', "verbose", HelpText = "Output verbose information")]
+		public bool VerboseLog { get; set; }
+
+		//TODO 
 	}
 
 	[Verb("create", HelpText = "Creates a new hash report")]
