@@ -1,9 +1,9 @@
 ﻿using System;
-using Fortress.Core;
+using Fortress.Core.Common;
 
 namespace Fortress.Tests.Parse
 {
-	public class RootParseTests
+    public class RootParseTests
 	{
 		[Test]
 		public void TestParseCommonPathRootInvalid()

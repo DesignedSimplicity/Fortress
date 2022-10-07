@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Fortress.Core.Services.Messages
+namespace Fortress.Core.Actions.Messages
 {
 	public abstract class BaseRequest
 	{

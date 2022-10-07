@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 
 namespace Fortress.Core.Services
 {
+	public enum HashType { Md5, Sha512 }
 	public class HashResult
 	{
 		public HashType HashType { get; private set; }
@@ -22,7 +23,6 @@ namespace Fortress.Core.Services
 		}
 	}
 
-	public enum HashType { Md5, Sha512 }
 	public class GetHash : IDisposable
 	{
 		private readonly HashAlgorithm _md5;

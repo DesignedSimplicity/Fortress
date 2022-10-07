@@ -1,4 +1,4 @@
-﻿using Fortress.Core;
+﻿using Fortress.Core.Common;
 using Fortress.Core.Entities;
 using Fortress.Core.Services;
 using System;

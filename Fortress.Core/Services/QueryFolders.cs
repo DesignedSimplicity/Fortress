@@ -1,11 +1,6 @@
-﻿using Fortress.Core.Entities;
+﻿using Fortress.Core.Common;
+using Fortress.Core.Entities;
 using Fortress.Core.Services.Settings;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Fortress.Core.Services
 {
@@ -20,10 +15,6 @@ namespace Fortress.Core.Services
 		private FolderNotify? _notify;
 		private StreamWriter? _output;
 		private readonly bool _stopOnError;
-
-		private int _folderCount { get; set; }
-		private readonly ConcurrentQueue<DirectoryInfo> _folderQueue = new ConcurrentQueue<DirectoryInfo>();
-		private readonly ConcurrentBag<Task> _tasks = new ConcurrentBag<Task>();
 
 		public QueryFolders()
 		{

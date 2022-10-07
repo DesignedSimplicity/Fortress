@@ -1,4 +1,5 @@
 ﻿using Fortress.Core.Entities;
+using Fortress.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Fortress.Core.Services.Messages
+namespace Fortress.Core.Actions.Messages
 {
 	public class CreatePatrolRequest : BaseRequest
 	{

@@ -1,13 +1,6 @@
-﻿using Fortress.Core.Entities;
+﻿using Fortress.Core.Common;
+using Fortress.Core.Entities;
 using Fortress.Core.Services.Settings;
-using OfficeOpenXml.Style;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Fortress.Core.Services.QueryFolders;
 
 namespace Fortress.Core.Services
 {

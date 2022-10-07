@@ -1,9 +1,9 @@
 ﻿using System;
-using Fortress.Core;
+using Fortress.Core.Common;
 
 namespace Fortress.Tests.Parse
 {
-	public class RootMatchTests
+    public class RootMatchTests
 	{
 		[Test]
 		public void TestHasSameRootAtRoot()

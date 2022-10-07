@@ -1,6 +1,5 @@
 ﻿using CommandLine;
 using Pastel;
-using System.Diagnostics;
 using System.Drawing;
 
 namespace Fortress.Patrol

@@ -1,4 +1,4 @@
-﻿using Fortress.Core;
+﻿using Fortress.Core.Common;
 using Fortress.Core.Entities;
 using Fortress.Core.Services;
 using System;
@@ -17,7 +17,7 @@ using System.Xml.Linq;
 
 namespace Fortress.Lookout
 {
-	public partial class Main : Form
+    public partial class Main : Form
 	{
 		private ConcurrentDictionary<string, PatrolFile> _fileCache;
 		private Dictionary<string, TreeNode> _nodeCache;

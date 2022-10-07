@@ -1,13 +1,7 @@
-﻿using Fortress.Core.Entities;
-using Fortress.Core.Services;
-using Fortress.Core.Services.Messages;
+﻿using Fortress.Core.Actions;
+using Fortress.Core.Actions.Messages;
 using Pastel;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Fortress.Patrol
 {

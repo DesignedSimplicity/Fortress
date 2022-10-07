@@ -1,9 +1,9 @@
 ﻿using System;
-using Fortress.Core;
+using Fortress.Core.Common;
 
 namespace Fortress.Tests.Parse
 {
-	public class PathDepthTests
+    public class PathDepthTests
 	{
 		[Test]
 		public void TestGetDepthInvalid()
