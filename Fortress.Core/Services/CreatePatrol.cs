@@ -84,12 +84,14 @@ namespace Fortress.Core.Services
 				// load subfolders
 				var folders = queryFolders.LoadFolders(folder.Uri);
 				folder.PatrolFolders.AddRange(folders);
-				if (verbose) _console?.Write($"\tFolders: {folder.PatrolFolders.Count}".Pastel(Color.Goldenrod));
+				execute.Folders.Add(folder);
+				if (verbose) _console?.Write($"\tFolders: {folders.Count}".Pastel(Color.Goldenrod));
 
 				// load files for current folder
 				var files = queryFiles.LoadFiles(folder.Uri, execute.Request.SearchFilter).OrderBy(x => x.Name).ToList();
 				folder.PatrolFiles.AddRange(files);
-				if (verbose) _console?.Write($"\tFiles: {folder.PatrolFiles.Count}".Pastel(Color.Goldenrod));
+				execute.Files.AddRange(files);
+				if (verbose)  _console?.Write($"\tFiles: {files.Count}".Pastel(Color.Goldenrod));
 				_console?.WriteLine();
 
 				// show verbose log if requested
@@ -102,10 +104,6 @@ namespace Fortress.Core.Services
 					}
 					_console?.WriteLine(ConsoleDivider.Pastel(Color.Goldenrod));
 				}
-
-				// add to execute list
-				execute.Folders.Add(folder);
-				execute.Files.AddRange(files);
 
 				// recursion
 				foreach (var sub in folders)
@@ -279,6 +277,8 @@ namespace Fortress.Core.Services
 				}
 			}
 
+			// create source patrol for here
+
 			// return review state
 			var review = new CreatePatrolReview(execute);
 			review.Exceptions.AddRange(exceptions);
@@ -288,19 +288,33 @@ namespace Fortress.Core.Services
 		public void Review(CreatePatrolReview review)
 		{
 			var execute = review.Execute;
+			var verbose = execute.Request.VerboseLog;
 
-			var color = Color.DeepPink;
+			var color = Color.Violet;
 			_console?.WriteLine(ConsoleSection.Pastel(color));
 			_console?.WriteLine($"Review: {execute.LogFileUri}".Pastel(color));
 
 			Output(execute);
 			Report(execute);
 
-			_console?.WriteLine(ConsoleDivider.Pastel(color));
-
-			var time = review.FinishUtc - execute.StartUtc;
+			if (verbose) Verbose(review);
 			
-			double bytes = execute.Files.Sum(x => x.Size);
+			_console?.WriteLine(ConsoleDivider.Pastel(color));
+			_console?.WriteLine($"Hash:\t\t{(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(color));
+			_console?.WriteLine($"Time:\t\t{review.Source.ElapsedTime:hh\\:mm\\:ss}".Pastel(color));
+			_console?.WriteLine($"Files:\t\t{execute.Files.Count}".Pastel(color));
+			_console?.WriteLine($"Folders:\t{execute.Folders.Count}".Pastel(color));			
+			_console?.WriteLine(ConsoleFooter.Pastel(color));
+			//_console?.WriteLine($"Size:\t{bytes.ToString(WholeNumberFormat)} Bytes  = {megabytes.ToString(SingleDecimalFormat)} MB = {gigabytes.ToString(DoubleDecimalFormat)} GB = {terabytes.ToString(TripleDecimalFormat)} TB".Pastel(color));
+			//_console?.WriteLine($"Time:\t{time:hh\\:mm\\:ss} H:M:S = {Math.Floor(time.TotalSeconds).ToString(WholeNumberFormat)} SEC".Pastel(color));
+			//_console?.WriteLine($"Rate:\t{gigabytePerHour.ToString(DoubleDecimalFormat)} GB/HOUR = {megabytePerMinute.ToString(DoubleDecimalFormat)} MB/MIN".Pastel(color));
+		}
+
+		private void Verbose(CreatePatrolReview review)
+		{
+			var time = review.FinishUtc - review.Execute.StartUtc;
+
+			double bytes = review.Execute.Files.Sum(x => x.Size);
 			var kilobytes = bytes / 1024.0;
 			var megabytes = kilobytes / 1024.0;
 			var gigabytes = megabytes / 1024.0;
@@ -318,7 +332,9 @@ namespace Fortress.Core.Services
 			var format4 = GetPaddedNumberFormat(GetMaxForFormat(gigabytes, time.TotalHours, gbph), 2);
 			var format5 = GetPaddedNumberFormat(GetMaxForFormat(terabytes, time.TotalDays, tbpd), 3);
 
-			color = Color.Pink;
+			var color = Color.Pink;
+			_console?.WriteLine(ConsoleDivider.Pastel(color));
+
 			_console?.Write($"Size:".Pastel(color));
 			_console?.Write($"\t{String.Format(format1, bytes)} Bytes    ".Pastel(color));
 			_console?.Write($"\t{String.Format(format2, kilobytes)} Kilobytes".Pastel(color));
@@ -344,18 +360,13 @@ namespace Fortress.Core.Services
 			_console?.Write($"\t{String.Format(format4, gbph)} GB/Hour  ".Pastel(color));
 			_console?.Write($"\t{String.Format(format5, tbpd)} TB/Day   ".Pastel(color));
 			_console?.WriteLine();
-
-			_console?.WriteLine(ConsoleDivider.Pastel(color));
-			//_console?.WriteLine($"Size:\t{bytes.ToString(WholeNumberFormat)} Bytes  = {megabytes.ToString(SingleDecimalFormat)} MB = {gigabytes.ToString(DoubleDecimalFormat)} GB = {terabytes.ToString(TripleDecimalFormat)} TB".Pastel(color));
-			//_console?.WriteLine($"Time:\t{time:hh\\:mm\\:ss} H:M:S = {Math.Floor(time.TotalSeconds).ToString(WholeNumberFormat)} SEC".Pastel(color));
-			//_console?.WriteLine($"Rate:\t{gigabytePerHour.ToString(DoubleDecimalFormat)} GB/HOUR = {megabytePerMinute.ToString(DoubleDecimalFormat)} MB/MIN".Pastel(color));
 		}
 
 		private void Output(CreatePatrolExecute execute)
 		{
 			if (!execute.CreateOutput) return;
 
-			var color = Color.Salmon;
+			var color = Color.Violet;
 			//_console?.WriteLine(ConsoleSection.Pastel(color));
 			_console?.WriteLine($"Output: {execute.OutputFileUri}".Pastel(color));
 
