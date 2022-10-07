@@ -16,7 +16,7 @@ namespace Fortress.Patrol
 
 			var engine = new Engine();
 
-			string[] test = { "create", "-d", @"N:\", "-rv" };
+			string[] test = { "create", "-d", @"D:\Drives\Dropbox", "-irv", "-e" };
 			var result = parser.ParseArguments<CreateOptions, VerifyOptions>(test)
 				.WithParsed<CreateOptions>(x => engine.Create(x))
 				.WithParsed<VerifyOptions>(x => engine.Verify(x));
@@ -26,6 +26,5 @@ namespace Fortress.Patrol
 				Console.WriteLine($"Error parsing options".Pastel(Color.Red));
 			}
 		}
-
 	}
 }

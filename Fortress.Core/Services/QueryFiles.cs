@@ -59,7 +59,7 @@ namespace Fortress.Core.Services
 			var list = new List<PatrolFile>();
 			var dir = new DirectoryInfo(uri);
 			
-			foreach (var f in dir.EnumerateFiles(String.IsNullOrWhiteSpace(filter) ? string.Empty : filter, new EnumerationOptions { IgnoreInaccessible = !_stopOnError, RecurseSubdirectories = recursive, MatchType = MatchType.Win32 }))
+			foreach (var f in dir.EnumerateFiles(String.IsNullOrWhiteSpace(filter) ? string.Empty : filter, new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = !_stopOnError, RecurseSubdirectories = recursive, MatchType = MatchType.Win32 }))
 			{
 				_output?.WriteLine($"LoadFile: {f.FullName}");
 				AssertPathTooLongException(f.FullName);
@@ -85,7 +85,7 @@ namespace Fortress.Core.Services
 		{
 			if (!PathUtils.IsMaxPath(uri)) return false;
 
-			var message = $"File path too long: '{uri}'.";
+			var message = $"File path too long ({uri.Length}): '{uri}'.";
 			_output?.WriteLine(message);
 			var exception = new PathTooLongException(message);
 			Exceptions.Add(exception);

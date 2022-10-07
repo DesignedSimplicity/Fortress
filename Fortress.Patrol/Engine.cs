@@ -55,8 +55,9 @@ namespace Fortress.Patrol
 
 				var execute = createPatrol.Prepare(request);
 
-				Console.WriteLine("PAUSE");
-				Console.ReadKey();
+				//Console.WriteLine("PAUSE");
+				//Console.ReadKey();
+
 				var review = createPatrol.Execute(execute);
 
 				createPatrol.Review(review);

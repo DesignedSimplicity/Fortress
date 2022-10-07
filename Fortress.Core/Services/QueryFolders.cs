@@ -68,7 +68,7 @@ namespace Fortress.Core.Services
 			AssertPathTooLongException(start.FullName);
 
 			var list = new List<PatrolFolder>();
-			foreach (var dir in start.EnumerateDirectories("*", new EnumerationOptions { IgnoreInaccessible = !_stopOnError, RecurseSubdirectories = false }))
+			foreach (var dir in start.EnumerateDirectories("*", new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = !_stopOnError, RecurseSubdirectories = false }))
 			{
 				_output?.WriteLine($"LoadFolder: {dir.FullName}");
 				AssertPathTooLongException(dir.FullName);
@@ -125,7 +125,7 @@ namespace Fortress.Core.Services
 
 				//Thread.Sleep(1);
 
-				foreach (var f in Directory.EnumerateDirectories(dir, "*", new EnumerationOptions { IgnoreInaccessible = _stopOnError, RecurseSubdirectories = false }))
+				foreach (var f in Directory.EnumerateDirectories(dir, "*", new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = _stopOnError, RecurseSubdirectories = false }))
 				{
 					dirs.Enqueue(f);
 				}

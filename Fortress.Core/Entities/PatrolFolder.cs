@@ -19,6 +19,8 @@ namespace Fortress.Core.Entities
 
 		public DateTime CreatedUtc { get; set; }
 		public DateTime? UpdatedUtc { get; set; }
+		public DateTime? DeclaredUTC { get; set; }
+		public DateTime? VerifiedUTC { get; set; }
 
 		public List<PatrolFolder> PatrolFolders { get; set; } = new List<PatrolFolder>();
 		public List<PatrolFile> PatrolFiles { get; set; } = new List<PatrolFile>();
