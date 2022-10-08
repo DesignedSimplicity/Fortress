@@ -9,6 +9,8 @@ namespace Fortress.Core.Services
 
 	public class QueryFolders
 	{
+		private readonly static string[] _excludedRoots = { "system volume information", "$recycle.bin" };
+
 		public List<Exception> Exceptions = new List<Exception>();
 		private IProgress<PatrolFolderState>? _progress;
 		private FolderStateChange? _change;
@@ -70,6 +72,9 @@ namespace Fortress.Core.Services
 			var list = new List<PatrolFolder>();
 			foreach (var dir in start.EnumerateDirectories("*", new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = !_stopOnError, RecurseSubdirectories = false }))
 			{
+				// skip this horrible folder
+				if (AssertPathExcludedRoot(dir)) continue;
+
 				_output?.WriteLine($"LoadFolder: {dir.FullName}");
 				AssertPathTooLongException(dir.FullName);
 
@@ -108,11 +113,15 @@ namespace Fortress.Core.Services
 			
 			while (dirs.Any())
 			{
-				var dir = dirs.Dequeue();
-				_output?.WriteLine($"LoadFolder: {dir}");
-				AssertPathTooLongException(dir);
+				var d = dirs.Dequeue();
+				_output?.WriteLine($"LoadFolder: {d}");
+				AssertPathTooLongException(d);
 
-				var folder = new PatrolFolder(dir);
+				// skip this horrible folder
+				var dir = new DirectoryInfo(d);
+				if (AssertPathExcludedRoot(dir)) continue;
+
+				var folder = new PatrolFolder(d);
 				var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
 				list.Add(folder);
 				
@@ -125,13 +134,18 @@ namespace Fortress.Core.Services
 
 				//Thread.Sleep(1);
 
-				foreach (var f in Directory.EnumerateDirectories(dir, "*", new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = _stopOnError, RecurseSubdirectories = false }))
+				foreach (var f in Directory.EnumerateDirectories(d, "*", new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = _stopOnError, RecurseSubdirectories = false }))
 				{
 					dirs.Enqueue(f);
 				}
 			}
 
 			return list;
+		}
+
+		private bool AssertPathExcludedRoot(DirectoryInfo dir)
+		{
+			return ((dir.Parent?.Name ?? "").EndsWith(@":\") && _excludedRoots.Contains(dir.Name.ToLowerInvariant()));
 		}
 
 		private bool AssertPathTooLongException(string uri)
