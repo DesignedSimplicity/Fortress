@@ -54,12 +54,7 @@ namespace Fortress.Patrol
 				if (c.Background) Console.WriteLine($"Start:\t {DateTime.Now}");
 
 				var execute = createPatrol.Prepare(request);
-
-				//Console.WriteLine("PAUSE");
-				//Console.ReadKey();
-
 				var review = createPatrol.Execute(execute);
-
 				createPatrol.Review(review);
 
 				if (c.Background)
