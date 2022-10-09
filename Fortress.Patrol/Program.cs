@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using Fortress.Core.Services;
 using Pastel;
 using System.Drawing;
 
@@ -13,6 +14,12 @@ namespace Fortress.Patrol
 				with.CaseSensitive = false;
 				with.CaseInsensitiveEnumValues = true;
 			});
+
+			/*
+			var reader = new ReadReport();
+			var source = reader.LoadFrom(@"F:\Fotos_20221008-045339.xlsx");
+			Console.WriteLine(source?.RootFolder);
+			*/
 
 			var engine = new Engine();
 
