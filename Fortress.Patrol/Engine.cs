@@ -26,9 +26,7 @@ namespace Fortress.Patrol
 			Console.WriteLine($"Log:\t {c.LogOutput}");
 			Console.WriteLine($"Verbose: {c.VerboseLog}");
 
-			bool verbose = c.VerboseLog;
-
-			Console.SetWindowSize(200, 50);
+			//Console.SetWindowSize(200, 50);
 
 			// validate
 			var request = new CreatePatrolRequest()

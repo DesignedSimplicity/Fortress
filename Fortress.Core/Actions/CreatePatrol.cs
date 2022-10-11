@@ -311,10 +311,10 @@ namespace Fortress.Core.Actions
             if (verbose) Summary(review);
 
             _console?.WriteLine(ConsoleDivider.Pastel(color));
-            _console?.WriteLine($"Mode:\t\tCreate {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(color));
-            _console?.WriteLine($"Time:\t\t{review.Source.ElapsedTime:hh\\:mm\\:ss}".Pastel(color));
-            _console?.WriteLine($"Files:\t\t{String.Format(WholeNumberFormat, execute.Files.Count)}".Pastel(color));
-            _console?.WriteLine($"Folders:\t{String.Format(WholeNumberFormat, execute.Folders.Count)}".Pastel(color));
+            _console?.WriteLine($"Mode:\t Create {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(color));
+            _console?.WriteLine($"Time:\t {review.Source.ElapsedTime:hh\\:mm\\:ss}".Pastel(color));
+            _console?.WriteLine($"Files:\t {execute.Files.Count.ToString(WholeNumberFormat)}".Pastel(color));
+            _console?.WriteLine($"Folders:{execute.Folders.Count.ToString(WholeNumberFormat)}".Pastel(color));
             _console?.WriteLine(ConsoleFooter.Pastel(color));
         }
 

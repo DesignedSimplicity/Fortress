@@ -23,7 +23,7 @@ namespace Fortress.Patrol
 
 			var engine = new Engine();
 
-			args = new string[]  { "create", "-d", @"F:\", "-irv", "-e" };
+			//args = new string[]  { "create", "-d", @"F:\", "-irv", "-e" };
 			var result = parser.ParseArguments<CreateOptions, VerifyOptions>(args)
 				.WithParsed<CreateOptions>(x => engine.Create(x))
 				.WithParsed<VerifyOptions>(x => engine.Verify(x));
