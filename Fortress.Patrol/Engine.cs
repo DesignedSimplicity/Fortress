@@ -46,31 +46,33 @@ namespace Fortress.Patrol
 				HashType = c.HashType,
 			};
 
-			var createPatrol = new CreatePatrol(c.Background ? null : Console.Out);
-			try
+			using (var createPatrol = new CreatePatrol(c.Background ? null : Console.Out))
 			{
-				if (c.Background) Console.WriteLine($"Start:\t {DateTime.Now}");
-
-				var execute = createPatrol.Prepare(request);
-				var review = createPatrol.Execute(execute);
-				createPatrol.Review(review);
-
-				if (c.Background)
+				try
 				{
-					Console.WriteLine($"Done:\t {DateTime.Now}");
-					Console.WriteLine($"Time:\t {review.FinishUtc - execute.StartUtc}");
+					if (c.Background) Console.WriteLine($"Start:\t {DateTime.Now}");
+
+					var execute = createPatrol.Prepare(request);
+					var review = createPatrol.Execute(execute);
+					createPatrol.Review(review);
+
+					if (c.Background)
+					{
+						Console.WriteLine($"Done:\t {DateTime.Now}");
+						Console.WriteLine($"Time:\t {review.FinishUtc - execute.StartUtc}");
+					}
 				}
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine("");
-				Console.WriteLine("####################################################################################################".Pastel(Color.Red));
-				Console.WriteLine($"EXCEPTION: {ex.Message}".Pastel(Color.Red));
-				Console.WriteLine(ex.ToString().Pastel(Color.DarkRed));
-			}
-			finally
-			{
-				createPatrol.Finish();
+				catch (Exception ex)
+				{
+					Console.WriteLine("");
+					Console.WriteLine("####################################################################################################".Pastel(Color.Red));
+					Console.WriteLine($"EXCEPTION: {ex.Message}".Pastel(Color.Red));
+					Console.WriteLine(ex.ToString().Pastel(Color.DarkRed));
+				}
+				finally
+				{
+					createPatrol.Finish();
+				}
 			}
 		}
 	}

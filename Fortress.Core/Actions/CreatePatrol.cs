@@ -23,20 +23,10 @@ namespace Fortress.Core.Actions
     {
         private StreamWriter? _log;
         private TextWriter? _console;
-        private readonly FolderNotify? _folderNotify;
-        private readonly FileNotify? _fileNotify;
-        private readonly FileNotify? _hashNotify;
 
         public CreatePatrol(TextWriter? console = null)
         {
             _console = console;
-        }
-
-        public CreatePatrol(FolderNotify? folder, FileNotify? file, FileNotify? hash)
-        {
-            _folderNotify = folder;
-            _fileNotify = file;
-            _hashNotify = hash;
         }
 
         public void Dispose()
@@ -50,7 +40,7 @@ namespace Fortress.Core.Actions
 
             // show prep in console
             _console?.WriteLine(ConsoleSection.Pastel(Color.Orange));
-            _console?.WriteLine($"Prepare: {execute.SourceFolderUri}".Pastel(Color.Orange));
+            _console?.WriteLine($"Prepare:\t{execute.SourceFolderUri}".Pastel(Color.Orange));
             _console?.WriteLine(ConsoleDivider.Pastel(Color.Orange));
 
             // prepare output files
@@ -62,14 +52,12 @@ namespace Fortress.Core.Actions
             {
                 StopOnError = execute.Request.StopOnError,
                 VerboseLog = verbose,
-                Notify = _folderNotify,
                 Output = _log,
             });
             var queryFiles = new QueryFiles(new QueryFilesSettings()
             {
                 StopOnError = execute.Request.StopOnError,
                 VerboseLog = verbose,
-                Notify = _fileNotify,
                 Output = _log,
             });
 
@@ -199,7 +187,7 @@ namespace Fortress.Core.Actions
         {
             // show prep in console
             _console?.WriteLine(ConsoleSection.Pastel(Color.Cyan));
-            _console?.WriteLine($"Execute: {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(Color.Cyan));
+            _console?.WriteLine($"Execute:\t{(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(Color.Cyan));
             _console?.WriteLine(ConsoleDivider.Pastel(Color.Cyan));
 
             //long totalDataProcessed = 0;
@@ -303,7 +291,7 @@ namespace Fortress.Core.Actions
 
             var color = Color.Violet;
             _console?.WriteLine(ConsoleSection.Pastel(color));
-            _console?.WriteLine($"Review: {execute.LogFileUri}".Pastel(color));
+            _console?.WriteLine($"Review:\t{execute.LogFileUri}".Pastel(color));
 
             Output(review);
             Report(review);
@@ -311,10 +299,10 @@ namespace Fortress.Core.Actions
             if (verbose) Summary(review);
 
             _console?.WriteLine(ConsoleDivider.Pastel(color));
-            _console?.WriteLine($"Mode:\t Create {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(color));
-            _console?.WriteLine($"Time:\t {review.Source.ElapsedTime:hh\\:mm\\:ss}".Pastel(color));
-            _console?.WriteLine($"Files:\t {execute.Files.Count.ToString(WholeNumberFormat)}".Pastel(color));
-            _console?.WriteLine($"Folders:{execute.Folders.Count.ToString(WholeNumberFormat)}".Pastel(color));
+            _console?.WriteLine($"Mode:\tCreate {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(color));
+            _console?.WriteLine($"Time:\t{review.Source.ElapsedTime:hh\\:mm\\:ss}".Pastel(color));
+            _console?.WriteLine($"Files:\t{execute.Files.Count.ToString(WholeNumberFormat)}".Pastel(color));
+            _console?.WriteLine($"Folders:\t{execute.Folders.Count.ToString(WholeNumberFormat)}".Pastel(color));
             _console?.WriteLine(ConsoleFooter.Pastel(color));
         }
 

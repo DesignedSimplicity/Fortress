@@ -24,6 +24,7 @@ namespace Fortress.Core.Actions
             if (verbose) console?.WriteLine(ex.ToString().Pastel(Color.DarkRed));
         }
 
+        //TODO: formatting is buggy
         protected string GetPaddedNumberFormat(long maxNumber, int decimals = 0)
         {
             var length = maxNumber.ToString().Length;
