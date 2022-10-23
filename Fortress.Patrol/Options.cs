@@ -14,8 +14,11 @@ namespace Fortress.Patrol
 		[Option('l', "log", HelpText = "Create a simple text log output")]
 		public bool LogOutput { get; set; }
 
-		[Option('r', "report", HelpText = "Create a detailed report in Excel")]
+		[Option('r', "report", HelpText = "Create a detailed Excel report")]
 		public bool CreateReport { get; set; }
+
+		[Option('x', "Export", HelpText = "Create a detailed CSV report")]
+		public bool CreateExport { get; set; }
 
 		[Option('i', "index", HelpText = "Records file properties only")]
 		public bool IndexOnly { get; set; }

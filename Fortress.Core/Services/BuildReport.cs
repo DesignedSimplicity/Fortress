@@ -25,9 +25,9 @@ namespace Fortress.Core.Services
 		{
 			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 			_package = new ExcelPackage();
-			_sources = NewWorksheet("Sources");
-			_folders = NewWorksheet("Folders");
 			_files = NewWorksheet("Files");
+			_folders = NewWorksheet("Folders");
+			_sources = NewWorksheet("Sources");
 		}
 
 		public void SaveAs(string uri)

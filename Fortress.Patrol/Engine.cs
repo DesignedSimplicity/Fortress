@@ -37,6 +37,7 @@ namespace Fortress.Patrol
 				LogOutput = c.LogOutput,
 				VerboseLog = c.VerboseLog,
 				StopOnError = c.StopOnError,
+				CreateExport = c.CreateExport,
 				CreateReport = c.CreateReport,
 
 				// create

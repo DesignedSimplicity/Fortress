@@ -9,13 +9,10 @@ namespace Fortress.Core.Actions.Messages
 	public abstract class BaseRequest
 	{
 		public string? NamePrefix { get; set; }
-
 		public bool StopOnError { get; set; }
-
 		public bool LogOutput { get; set; }
-
+		public bool CreateExport { get; set; }
 		public bool CreateReport { get; set; }
-
 		public bool IndexOnly { get; set; }
 	}
 
@@ -25,9 +22,11 @@ namespace Fortress.Core.Actions.Messages
 
 		public bool CreateLog { get; set; }
 		public bool CreateOutput { get; set; }
+		public bool CreateExport { get; set; }
 		public bool CreateReport { get; set; }
 
 		public string LogFileUri { get; set; } = string.Empty;
+		public string ExportFileUri { get; set; } = string.Empty;
 		public string OutputFileUri { get; set; } = string.Empty;
 		public string ReportFileUri { get; set; } = string.Empty;
 

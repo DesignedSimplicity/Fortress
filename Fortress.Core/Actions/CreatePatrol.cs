@@ -163,6 +163,14 @@ namespace Fortress.Core.Actions
                 if (File.Exists(execute.LogFileUri)) throw new IOException($"Log file '{execute.LogFileUri}' already exists");
             }
 
+            // exsure export file is accessible
+            if (request.CreateExport)
+            {
+                execute.CreateExport = true;
+                execute.ExportFileUri = Path.Combine(uri, name + ".csv");
+				if (File.Exists(execute.ExportFileUri)) throw new IOException($"Export file '{execute.ExportFileUri}' already exists");
+			}
+
             // ensure report file is accessible
             if (request.CreateReport)
             {
@@ -294,6 +302,7 @@ namespace Fortress.Core.Actions
             _console?.WriteLine($"Review:\t{execute.LogFileUri}".Pastel(color));
 
             Output(review);
+            Export(review);
             Report(review);
 
             if (verbose) Summary(review);
@@ -358,63 +367,77 @@ namespace Fortress.Core.Actions
             _console?.WriteLine();
         }
 
-        private void Output(CreatePatrolReview review)
-        {
-            var execute = review.Execute;
-            if (!execute.CreateOutput) return;
+		private void Export(CreatePatrolReview review)
+		{
+			var execute = review.Execute;
+			if (!execute.CreateExport) return;
 
-            var color = Color.Violet;
-            //_console?.WriteLine(ConsoleSection.Pastel(color));
-            _console?.WriteLine($"Output: {execute.OutputFileUri}".Pastel(color));
+			var color = Color.Violet;
+			//_console?.WriteLine(ConsoleSection.Pastel(color));
+			_console?.WriteLine($"Export: {execute.ExportFileUri}".Pastel(color));
 
-            // create md5/sha512 output file header
-            using (StreamWriter output = File.CreateText(execute.OutputFileUri))
-            {
-                output.WriteLine($"# Generated {execute.Request.HashType} with Patrol at UTC {DateTime.UtcNow}");
-                output.WriteLine($"# https://github.com/DesignedSimplicity/Expedition/");
-                output.WriteLine($"# --------------------------------------------------");
-                output.WriteLine();
-                output.WriteLine($"# System:\t{execute.SystemName}");
-                output.WriteLine($"# Source:\t{execute.SourceFolderUri}");
-                //output.WriteLine($"# Target Folder: {execute.PatrolSource.TargetFolderUri}");
-                output.WriteLine($"# Hash:\t\t{execute.Request.HashType}");
-                output.WriteLine($"# Size:\t\t{execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}");
-                output.WriteLine($"# Files:\t{execute.Files.Count.ToString(WholeNumberFormat)}");
-                output.WriteLine($"# Folders:\t{execute.Folders.Count.ToString(WholeNumberFormat)}");
-                if (execute.Exceptions.Count() > 0) output.WriteLine($"# Errors:\t{execute.Exceptions.Count().ToString(WholeNumberFormat)}");
-                output.WriteLine($"# --------------------------------------------------");
+            // create export file
+            ExportFileCsv(execute.Files.OrderBy(x => x.Uri), execute.ExportFileUri);
+		}
 
-                // prepare for files output
-                var maxFiles = execute.Folders.Max(x => x.PatrolFiles.Count);
-                var filesFormat = GetPaddedNumberFormat(maxFiles);
-                var maxSizes = execute.Folders.Max(x => x.PatrolFiles.Sum(y => y.Size));
-                var sizesFormat = GetPaddedNumberFormat(maxSizes);
-                foreach (var folder in execute.Folders.OrderBy(x => x.Uri))
-                {
-                    output.WriteLine($"# Files: {string.Format(filesFormat, folder.PatrolFiles.Count)}\tSize: {string.Format(sizesFormat, folder.TotalFileSize)}\t\t{folder.Uri}");
-                }
-                output.WriteLine($"# --------------------------------------------------");
-                output.WriteLine();
+		private void Output(CreatePatrolReview review)
+		{
+			var execute = review.Execute;
+			if (!execute.CreateOutput) return;
 
-                // format and write checksum to stream
-                foreach (var file in execute.Files.OrderBy(x => x.Uri))
-                {
-                    var path = file.Uri;// execute.GetOuputPath(file.Uri);
-                    output.WriteLine($"{(execute.Request.HashType == HashType.Md5 ? file.Md5 : file.Sha512)} {path}");
-                }
+			var color = Color.Violet;
+			//_console?.WriteLine(ConsoleSection.Pastel(color));
+			_console?.WriteLine($"Output: {execute.OutputFileUri}".Pastel(color));
 
-                // clean up output file
-                output.Flush();
-                output.Close();
+			// create md5/sha512 output file header
+			//using (StreamWriter output = new StreamWriter(execute.OutputFileUri, false, Encoding.Unicode))
+			using (StreamWriter output = File.CreateText(execute.OutputFileUri))
+			{
+				output.WriteLine($"# Generated {execute.Request.HashType} with Patrol at UTC {DateTime.UtcNow}");
+				output.WriteLine($"# https://github.com/DesignedSimplicity/Expedition/");
+				output.WriteLine($"# --------------------------------------------------");
+				output.WriteLine();
+				output.WriteLine($"# System:\t{execute.SystemName}");
+				output.WriteLine($"# Source:\t{execute.SourceFolderUri}");
+				//output.WriteLine($"# Target Folder: {execute.PatrolSource.TargetFolderUri}");
+				output.WriteLine($"# Hash:\t\t{execute.Request.HashType}");
+				output.WriteLine($"# Size:\t\t{execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}");
+				output.WriteLine($"# Files:\t{execute.Files.Count.ToString(WholeNumberFormat)}");
+				output.WriteLine($"# Folders:{execute.Folders.Count.ToString(WholeNumberFormat)}");
+				if (execute.Exceptions.Count() > 0) output.WriteLine($"# Errors:\t{execute.Exceptions.Count().ToString(WholeNumberFormat)}");
+				output.WriteLine($"# --------------------------------------------------");
 
-                // show summary
-                //_console?.WriteLine(ConsoleDivider.Pastel(color));
-                //_console?.WriteLine($"Saved {execute.Files.Count().ToString(WholeNumberFormat)} {execute.Request.HashType} file hashes".Pastel(color));
-                //_console?.WriteLine(ConsoleDivider.Pastel(color));
-            }
-        }
+				// prepare for files output
+				var maxFiles = execute.Folders.Max(x => x.PatrolFiles.Count);
+				var filesFormat = GetPaddedNumberFormat(maxFiles);
+				var maxSizes = execute.Folders.Max(x => x.PatrolFiles.Sum(y => y.Size));
+				var sizesFormat = GetPaddedNumberFormat(maxSizes);
+				foreach (var folder in execute.Folders.OrderBy(x => x.Uri))
+				{
+					output.WriteLine($"# Files: {string.Format(filesFormat, folder.PatrolFiles.Count)}\tSize: {string.Format(sizesFormat, folder.TotalFileSize)}\t\t{folder.Uri}");
+				}
+				output.WriteLine($"# --------------------------------------------------");
+				output.WriteLine();
 
-        private void Report(CreatePatrolReview review)
+				// format and write checksum to stream
+				foreach (var file in execute.Files.OrderBy(x => x.Uri))
+				{
+					var path = file.Uri;// execute.GetOuputPath(file.Uri);
+					output.WriteLine($"{(execute.Request.HashType == HashType.Md5 ? file.Md5 : file.Sha512)} {path}");
+				}
+
+				// clean up output file
+				output.Flush();
+				output.Close();
+
+				// show summary
+				//_console?.WriteLine(ConsoleDivider.Pastel(color));
+				//_console?.WriteLine($"Saved {execute.Files.Count().ToString(WholeNumberFormat)} {execute.Request.HashType} file hashes".Pastel(color));
+				//_console?.WriteLine(ConsoleDivider.Pastel(color));
+			}
+		}
+
+		private void Report(CreatePatrolReview review)
         {
             var execute = review.Execute;
             if (!execute.CreateReport) return;
