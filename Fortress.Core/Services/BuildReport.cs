@@ -72,10 +72,10 @@ namespace Fortress.Core.Services
 			_sources.Cells[row, col++].Value = "TotalFileCount";
 			_sources.Cells[row, col++].Value = "TotalFolderCount";
 			_sources.Cells[row, col++].Value = "TotalSeconds";
-			_sources.Cells[row, col++].Value = "CreatedUTC";
-			_sources.Cells[row, col++].Value = "UpdatedUTC";
-			_sources.Cells[row, col++].Value = "DeclaredUTC";
-			_sources.Cells[row, col++].Value = "VerifiedUTC";
+			_sources.Cells[row, col++].Value = "CreatedUtc";
+			_sources.Cells[row, col++].Value = "ModifiedUtc";
+			_sources.Cells[row, col++].Value = "DeclaredUtc";
+			_sources.Cells[row, col++].Value = "VerifiedUtc";
 
 			foreach (var source in sources)
 			{
@@ -93,7 +93,7 @@ namespace Fortress.Core.Services
 				_sources.Cells[row, col++].Value = source.AllFolders.Count;
 				_sources.Cells[row, col++].Value = source.ElapsedTime.TotalSeconds;
 				_sources.Cells[row, col++].Value = source.CreatedUtc;
-				_sources.Cells[row, col++].Value = source.UpdatedUtc;
+				_sources.Cells[row, col++].Value = source.ModifiedUtc;
 				//_sources.Cells[row, col++].Value = source.DeclaredUTC;
 				//_sources.Cells[row, col++].Value = source.VerifiedUTC;
 			}
@@ -122,10 +122,10 @@ namespace Fortress.Core.Services
 			_folders.Cells[row, col++].Value = "DirectoryName";
 			_folders.Cells[row, col++].Value = "TotalFileCount";
 			_folders.Cells[row, col++].Value = "TotalFileSize";
-			_folders.Cells[row, col++].Value = "CreatedUTC";
-			_folders.Cells[row, col++].Value = "UpdatedUTC";
-			_folders.Cells[row, col++].Value = "DeclaredUTC";
-			_folders.Cells[row, col++].Value = "VerifiedUTC";
+			_folders.Cells[row, col++].Value = "CreatedUtc";
+			_folders.Cells[row, col++].Value = "ModifiedUtc";
+			_folders.Cells[row, col++].Value = "DeclaredUtc";
+			_folders.Cells[row, col++].Value = "VerifiedUtc";
 
 			foreach (var folder in folders)
 			{
@@ -138,7 +138,7 @@ namespace Fortress.Core.Services
 				_folders.Cells[row, col++].Value = folder.PatrolFiles.Count;
 				_folders.Cells[row, col++].Value = folder.TotalFileSize;
 				_folders.Cells[row, col++].Value = folder.CreatedUtc;
-				_folders.Cells[row, col++].Value = folder.UpdatedUtc;
+				_folders.Cells[row, col++].Value = folder.ModifiedUtc;
 				//_folders.Cells[row, col++].Value = folder.DeclaredUTC;
 				//_folders.Cells[row, col++].Value = folder.VerifiedUTC;
 			}
@@ -171,10 +171,10 @@ namespace Fortress.Core.Services
 			_files.Cells[row, col++].Value = "Md5Status";
 			_files.Cells[row, col++].Value = "Sha512";
 			_files.Cells[row, col++].Value = "Sha512Status";
-			_files.Cells[row, col++].Value = "CreatedUTC";
-			_files.Cells[row, col++].Value = "UpdatedUTC";
-			_files.Cells[row, col++].Value = "DeclaredUTC";
-			_files.Cells[row, col++].Value = "VerifiedUTC";
+			_files.Cells[row, col++].Value = "CreatedUtc";
+			_files.Cells[row, col++].Value = "ModifiedUtc";
+			_files.Cells[row, col++].Value = "DeclaredUtc";
+			_files.Cells[row, col++].Value = "VerifiedUtc";
 
 			foreach (var file in files)
 			{
@@ -193,7 +193,7 @@ namespace Fortress.Core.Services
 				_files.Cells[row, col++].Value = file.Sha512;
 				_files.Cells[row, col++].Value = file.Sha512Status == HashStatus.Unknown ? "" : file.Sha512Status.ToString();
 				_files.Cells[row, col++].Value = file.CreatedUtc;
-				_files.Cells[row, col++].Value = file.UpdatedUtc;
+				_files.Cells[row, col++].Value = file.ModifiedUtc;
 				//_files.Cells[row, col++].Value = folder.DeclaredUTC;
 				//_files.Cells[row, col++].Value = folder.VerifiedUTC;
 			}

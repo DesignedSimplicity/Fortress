@@ -20,7 +20,7 @@ namespace Fortress.Core.Entities
 		public long Size { get; set; }
 
 		public DateTime CreatedUtc { get; set; }
-		public DateTime? UpdatedUtc { get; set; }
+		public DateTime? ModifiedUtc { get; set; }
 
 		public string Md5 = string.Empty;
 		public string Sha512 = string.Empty;
@@ -41,7 +41,7 @@ namespace Fortress.Core.Entities
 			DirectoryName = file.Directory?.Name ?? "";
 
 			CreatedUtc = file.CreationTimeUtc;
-			UpdatedUtc = file.LastWriteTimeUtc;
+			ModifiedUtc = file.LastWriteTimeUtc;
 		}
 
 		/*

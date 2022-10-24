@@ -18,7 +18,7 @@ namespace Fortress.Core.Entities
 		public string Name { get; set; }
 
 		public DateTime CreatedUtc { get; set; }
-		public DateTime? UpdatedUtc { get; set; }
+		public DateTime? ModifiedUtc { get; set; }
 		public DateTime? DeclaredUTC { get; set; }
 		public DateTime? VerifiedUTC { get; set; }
 
@@ -34,7 +34,7 @@ namespace Fortress.Core.Entities
 			Name = dir.Name;
 			Directory = dir;
 			CreatedUtc = dir.CreationTimeUtc;
-			UpdatedUtc = dir.LastWriteTimeUtc;
+			ModifiedUtc = dir.LastWriteTimeUtc;
 		}
 
 		public PatrolFolder(string uri)

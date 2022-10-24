@@ -80,7 +80,7 @@ namespace Fortress.Core.Actions
                 if (verbose) _console?.Write($"\tFolders: {folders.Count}".Pastel(Color.Goldenrod));
 
                 // load files for current folder
-                var files = queryFiles.LoadFiles(folder.Uri, execute.Request.SearchFilter).OrderBy(x => x.Name).ToList();
+                var files = queryFiles.LoadFiles(folder.Uri, request.SearchFilter, request.Recursive).OrderBy(x => x.Name).ToList();
                 folder.PatrolFiles.AddRange(files);
                 execute.Files.AddRange(files);
                 if (verbose) _console?.Write($"\tFiles: {files.Count}".Pastel(Color.Goldenrod));
@@ -98,9 +98,12 @@ namespace Fortress.Core.Actions
                 }
 
                 // recursion
-                foreach (var sub in folders)
+                if (request.Recursive)
                 {
-                    queue.Enqueue(sub);
+                    foreach (var sub in folders)
+                    {
+                        queue.Enqueue(sub);
+                    }
                 }
             }
 
@@ -422,6 +425,10 @@ namespace Fortress.Core.Actions
 				// format and write checksum to stream
 				foreach (var file in execute.Files.OrderBy(x => x.Uri))
 				{
+                    
+                    // TODO - make relative file URI
+
+
 					var path = file.Uri;// execute.GetOuputPath(file.Uri);
 					output.WriteLine($"{(execute.Request.HashType == HashType.Md5 ? file.Md5 : file.Sha512)} {path}");
 				}

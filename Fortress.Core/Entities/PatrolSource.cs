@@ -24,7 +24,7 @@ namespace Fortress.Core.Entities
 
 		public TimeSpan ElapsedTime { get; set; }
 		public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
-		public DateTime? UpdatedUtc { get; set; }
+		public DateTime? ModifiedUtc { get; set; }
 
 		public PatrolSource(string uri, List<PatrolFolder>? folders = null, List<PatrolFile>? files = null)
 		{

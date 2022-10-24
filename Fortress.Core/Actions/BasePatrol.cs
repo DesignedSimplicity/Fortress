@@ -52,8 +52,8 @@ namespace Fortress.Core.Actions
 			{
 				// write header
 				output.Write("\"FileId\",\"FileGuid\",\"FileUri\",\"FileName\",\"DirectoryName\",\"FileExtension\",\"FileSize\",\"FileStatus\",\"Md5\",\"Md5Status\",\"Sha512\",\"Sha512Status\",");
-				output.WriteLine("\"CreatedUTC\",\"UpdatedUTC\"");
-				//output.WriteLine("\"CreatedUTC\",\"UpdatedUTC\",\"DeclaredUTC\",\"VerifiedUTC\"");
+				output.WriteLine("\"CreatedUtc\",\"ModifiedUtc\"");
+				//output.WriteLine("\"CreatedUtc\",\"ModifiedUtc\",\"DeclaredUtc\",\"VerifiedUtc\"");
 
 				var count = 0;
 				foreach (var file in files)
@@ -75,7 +75,7 @@ namespace Fortress.Core.Actions
 					output.Write($"\"{file.Sha512}\",");
 					output.Write($"\"{file.Sha512Status}\",");
 
-					output.WriteLine($"\"{file.CreatedUtc}\",\"{file.UpdatedUtc}\"");
+					output.WriteLine($"\"{file.CreatedUtc}\",\"{file.ModifiedUtc}\"");
 
 					/*
 					output.Write($"\"{file.CreatedUtc}\",");
