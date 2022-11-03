@@ -18,8 +18,7 @@ namespace Fortress.Core.Actions
         protected const string ConsoleDivider = "----------------------------------------------------------------------------------------------------";
         protected const string ConsoleFooter = "####################################################################################################";
 
-
-        protected void ShowException(TextWriter? console, Exception ex, bool verbose = false)
+		protected void ShowException(TextWriter? console, Exception ex, bool verbose = false)
         {
             console?.WriteLine(ex.Message.Pastel(Color.Red));
             if (verbose) console?.WriteLine(ex.ToString().Pastel(Color.DarkRed));

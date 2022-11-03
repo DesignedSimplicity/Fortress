@@ -9,7 +9,7 @@ namespace Fortress.Core.Actions
 {
 	public class VerifyPatrol : BasePatrol
 	{
-		private StreamWriter? _log;
+		//private StreamWriter? _log;
 		private TextWriter? _console;
 
 		public VerifyPatrol(TextWriter? console = null)

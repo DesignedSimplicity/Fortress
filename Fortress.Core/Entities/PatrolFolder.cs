@@ -1,99 +1,91 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Fortress.Core.Common;
+﻿using Fortress.Core.Common;
 
-namespace Fortress.Core.Entities
+namespace Fortress.Core.Entities;
+
+public class PatrolFolder
 {
+	public DirectoryInfo? Directory { get; set; }
 
-	public class PatrolFolder
+	public Guid Guid { get; set; }
+	public string Uri { get; set; }
+	public string Name { get; set; }
+
+	public DateTime CreatedUtc { get; set; }
+	public DateTime? ModifiedUtc { get; set; }
+	public DateTime? DeclaredUTC { get; set; }
+	public DateTime? VerifiedUTC { get; set; }
+
+	public List<PatrolFolder> PatrolFolders { get; set; } = new List<PatrolFolder>();
+	public List<PatrolFile> PatrolFiles { get; set; } = new List<PatrolFile>();
+
+	public long TotalFileSize => PatrolFiles.Sum(x => x.Size);
+
+	public PatrolFolder(DirectoryInfo dir)
 	{
-		public DirectoryInfo? Directory { get; set; }
-
-		public Guid Guid { get; set; }
-		public string Uri { get; set; }
-		public string Name { get; set; }
-
-		public DateTime CreatedUtc { get; set; }
-		public DateTime? ModifiedUtc { get; set; }
-		public DateTime? DeclaredUTC { get; set; }
-		public DateTime? VerifiedUTC { get; set; }
-
-		public List<PatrolFolder> PatrolFolders { get; set; } = new List<PatrolFolder>();
-		public List<PatrolFile> PatrolFiles { get; set; } = new List<PatrolFile>();
-
-		public long TotalFileSize => PatrolFiles.Sum(x => x.Size);
-
-		public PatrolFolder(DirectoryInfo dir)
-		{
-			Guid = Guid.NewGuid();
-			Uri = dir.FullName;
-			Name = dir.Name;
-			Directory = dir;
-			CreatedUtc = dir.CreationTimeUtc;
-			ModifiedUtc = dir.LastWriteTimeUtc;
-		}
-
-		public PatrolFolder(string uri)
-		{
-			Uri = uri;
-			Name = PathUtils.GetParentName(uri);
-		}
+		Guid = Guid.NewGuid();
+		Uri = dir.FullName;
+		Name = dir.Name;
+		Directory = dir;
+		CreatedUtc = dir.CreationTimeUtc;
+		ModifiedUtc = dir.LastWriteTimeUtc;
 	}
 
-	public enum PatrolFolderStatus
+	public PatrolFolder(string uri)
 	{
-		/// <summary>
-		/// Error accessing folder
-		/// </summary>
-		Exception = -9,
+		Uri = uri;
+		Name = PathUtils.GetParentName(uri);
+	}
+}
 
-		/// <summary>
-		/// Not found on file system
-		/// </summary>
-		NotFound = -1,
+public enum PatrolFolderStatus
+{
+	/// <summary>
+	/// Error accessing folder
+	/// </summary>
+	Exception = -9,
 
-		/// <summary>
-		/// Unspecified state
-		/// </summary>
-		Default = 0,
+	/// <summary>
+	/// Not found on file system
+	/// </summary>
+	NotFound = -1,
 
-		/// <summary>
-		/// Confirmed existing
-		/// </summary>
-		Exists = 1,
+	/// <summary>
+	/// Unspecified state
+	/// </summary>
+	Default = 0,
 
-		/// <summary>
-		/// All contents recursively verifed
-		/// </summary>
-		Verified = 9,
+	/// <summary>
+	/// Confirmed existing
+	/// </summary>
+	Exists = 1,
+
+	/// <summary>
+	/// All contents recursively verifed
+	/// </summary>
+	Verified = 9,
+}
+
+public class PatrolFolderState
+{
+	public PatrolFolder Folder { get; set; }
+	public Guid StateId { get; set; } = Guid.NewGuid();
+	public PatrolFolderStatus Status { get; set; } = PatrolFolderStatus.Default;
+	public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+	public string Message { get; set; } = string.Empty;
+	public Exception? Exception { get; set; } = null;
+
+
+	public PatrolFolderState(PatrolFolder folder, PatrolFolderStatus status = PatrolFolderStatus.Default, string message = "")
+	{
+		Folder = folder;
+		Status = status;
+		Message = message;
 	}
 
-	public class PatrolFolderState
+	public PatrolFolderState(PatrolFolder folder, Exception ex)
 	{
-		public PatrolFolder Folder { get; set; }
-		public Guid StateId { get; set; } = Guid.NewGuid();
-		public PatrolFolderStatus Status { get; set; } = PatrolFolderStatus.Default;
-		public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-		public string Message { get; set; } = string.Empty;
-		public Exception? Exception { get; set; } = null;
-
-
-		public PatrolFolderState(PatrolFolder folder, PatrolFolderStatus status = PatrolFolderStatus.Default, string message = "")
-		{
-			Folder = folder;
-			Status = status;
-			Message = message;
-		}
-
-		public PatrolFolderState(PatrolFolder folder, Exception ex)
-		{
-			Folder = folder;
-			Status = PatrolFolderStatus.Exception;
-			Message = ex.Message;
-		}
+		Folder = folder;
+		Status = PatrolFolderStatus.Exception;
+		Message = ex.Message;
 	}
 }

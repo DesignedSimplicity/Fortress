@@ -3,26 +3,19 @@
 //Simple vs verbose logging
 
 using Fortress.Core.Actions.Messages;
+using Fortress.Core.Common;
 using Fortress.Core.Entities;
 using Fortress.Core.Services;
 using Fortress.Core.Services.Settings;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections;
 using Pastel;
-using System.Diagnostics;
-using Fortress.Core.Common;
+using System.Drawing;
 
 namespace Fortress.Core.Actions
 {
     public sealed class CreatePatrol : BasePatrol, IDisposable
     {
         private StreamWriter? _log;
-        private TextWriter? _console;
+        private readonly TextWriter? _console;
 
         public CreatePatrol(TextWriter? console = null)
         {
