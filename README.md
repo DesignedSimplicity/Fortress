@@ -18,3 +18,6 @@ patrol create --error					Stops on first error
 patrol create --log						Creates a simple log file
 patrol create --flat					Disables directory recursion
 ```
+
+
+# Common Options

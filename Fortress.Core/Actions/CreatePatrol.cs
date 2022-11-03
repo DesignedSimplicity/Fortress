@@ -80,7 +80,7 @@ namespace Fortress.Core.Actions
                 if (verbose) _console?.Write($"\tFolders: {folders.Count}".Pastel(Color.Goldenrod));
 
                 // load files for current folder
-                var files = queryFiles.LoadFiles(folder.Uri, request.SearchFilter, request.Recursive).OrderBy(x => x.Name).ToList();
+                var files = queryFiles.LoadFiles(folder.Uri, request.SearchFilter, false).OrderBy(x => x.Name).ToList();
                 folder.PatrolFiles.AddRange(files);
                 execute.Files.AddRange(files);
                 if (verbose) _console?.Write($"\tFiles: {files.Count}".Pastel(Color.Goldenrod));
@@ -449,7 +449,9 @@ namespace Fortress.Core.Actions
             var execute = review.Execute;
             if (!execute.CreateReport) return;
 
-            var color = Color.Violet;
+            ValidateForXslx(_console, execute.Files);
+
+			var color = Color.Violet;
             //_console?.WriteLine(ConsoleSection.Pastel(color));
             _console?.WriteLine($"Report: {execute.ReportFileUri}".Pastel(color));
 

@@ -12,14 +12,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fortress.Lookout", "Fortres
 		{36895BFC-0128-43D3-A961-1D9E6D7E716B} = {36895BFC-0128-43D3-A961-1D9E6D7E716B}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fortress.Watchtower", "Fortress.Watchtower\Fortress.Watchtower.csproj", "{2C281F79-10EF-4A88-8FCD-2D51E5975E13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fortress.Watchtower", "Fortress.Watchtower\Fortress.Watchtower.csproj", "{2C281F79-10EF-4A88-8FCD-2D51E5975E13}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CDD48BC0-9AA8-4D95-91AF-3110284FB82E}"
 	ProjectSection(SolutionItems) = preProject
+		Deploy.bat = Deploy.bat
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fortress.Tests", "Fortress.Tests\Fortress.Tests.csproj", "{CB231C64-D8C1-4BB7-8CE1-80DC295F7C46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fortress.Tests", "Fortress.Tests\Fortress.Tests.csproj", "{CB231C64-D8C1-4BB7-8CE1-80DC295F7C46}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -46,6 +46,15 @@ namespace Fortress.Core.Actions
             return Convert.ToInt64(Math.Max(Math.Max(Math.Round(a), Math.Round(b)), Math.Round(c)));
         }
 
+		protected void ValidateForXslx(TextWriter? console, IEnumerable<PatrolFile> files)
+		{
+			if (files.Count() >= (1048576 - 1))
+			{
+				console?.WriteLine($"Report: Number of files exceed Xlsx specification (1,048,576). Try using -x for CSV Export instead.".Pastel(Color.Red));
+				return;
+			}
+		}
+
 		protected void ExportFileCsv(IEnumerable<PatrolFile> files, string uri)
 		{
 			using (StreamWriter output = File.CreateText(uri))
