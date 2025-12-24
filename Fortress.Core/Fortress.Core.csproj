@@ -6,4 +6,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="EPPlus" Version="6.0.8" />
+    <PackageReference Include="ExcelToEnumerable" Version="0.3.10" />
+    <PackageReference Include="Pastel" Version="3.0.1" />
+  </ItemGroup>
+
 </Project>

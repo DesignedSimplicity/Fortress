@@ -1,181 +1,165 @@
-﻿using Fortress.Core.Entities;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Fortress.Core.Common;
+using Fortress.Core.Entities;
+using Fortress.Core.Services.Settings;
 
-namespace Fortress.Core.Services
+namespace Fortress.Core.Services;
+
+public delegate void FolderNotify(PatrolFolder folder);
+public delegate void FolderStateChange(PatrolFolderState state);
+
+public class QueryFolders
 {
+	private readonly static string[] _excludedRoots = { "system volume information", "$recycle.bin" };
 
-	public class QueryFolders
+	public List<Exception> Exceptions = new();
+	private readonly IProgress<PatrolFolderState>? _progress;
+	private readonly FolderStateChange? _change;
+	private readonly FolderNotify? _notify;
+	private readonly StreamWriter? _output;
+	private readonly bool _stopOnError;
+
+	public QueryFolders()
 	{
-		public delegate void FolderStateChange(PatrolFolderState state);
+	}
 
-		private IProgress<PatrolFolderState>? _progress;
-		private FolderStateChange? _change;
+	public QueryFolders(QueryFoldersSettings settings)
+	{
+		_output = settings.Output;
+		_notify = settings.Notify;
+		_stopOnError = settings.StopOnError;
+	}
 
-		private int _folderCount { get; set; }
-		private readonly ConcurrentQueue<DirectoryInfo> _folderQueue = new ConcurrentQueue<DirectoryInfo>();
-		private readonly ConcurrentBag<Task> _tasks = new ConcurrentBag<Task>();
+	public QueryFolders(StreamWriter? output, FolderNotify? notify)
+	{
+		_output = output;
+		_notify = notify;
+	}
 
-		public QueryFolders()
+	public QueryFolders(IProgress<PatrolFolderState> progress)
+	{
+		_progress = progress;
+	}
+
+	public QueryFolders(FolderStateChange progress)
+	{
+		_change = progress;
+	}
+
+	public PatrolFolder LoadFolder(string uri)
+	{
+		_output?.WriteLine($"LoadFolder: {uri}");
+		var dir = new DirectoryInfo(uri);
+		AssertPathTooLongException(dir.FullName);
+
+		var folder = new PatrolFolder(dir);
+		var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);			
+
+		_notify?.Invoke(folder);
+		_change?.Invoke(state);
+		_progress?.Report(state);
+
+		//Thread.Sleep(1);
+
+		return folder;
+	}
+
+	public List<PatrolFolder> LoadFolders(string uri, CancellationToken? token = null)
+	{
+		_output?.WriteLine($"LoadFolders: {uri}");
+		var start = new DirectoryInfo(uri);
+		AssertPathTooLongException(start.FullName);
+
+		var list = new List<PatrolFolder>();
+		foreach (var dir in start.EnumerateDirectories("*", new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = !_stopOnError, RecurseSubdirectories = false }))
 		{
-		}
+			// skip this horrible folder
+			if (AssertPathExcludedRoot(dir)) continue;
 
-		public QueryFolders(IProgress<PatrolFolderState> progress)
-		{
-			_progress = progress;
-		}
+			_output?.WriteLine($"LoadFolder: {dir.FullName}");
+			AssertPathTooLongException(dir.FullName);
 
-		public QueryFolders(FolderStateChange progress)
-		{
-			_change = progress;
-		}
-
-		public async Task<List<PatrolFolder>> LoadAllFoldersAsync(string uri, CancellationToken? token = null)
-		{
-			return await Task.Run(() => {
-				return LoadAllFolders(uri, token);
-			});
-
-		}
-
-		public PatrolFolder LoadFolder(string uri)
-		{
-			var dir = new DirectoryInfo(uri);
 			var folder = new PatrolFolder(dir);
 			var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
+			list.Add(folder);
 
-			_progress?.Report(state);
+			// cancellation returns empty list
+			if (token?.IsCancellationRequested ?? false) return new List<PatrolFolder>();
+
+			_notify?.Invoke(folder);
 			_change?.Invoke(state);
+			_progress?.Report(state);
 
-			Thread.Sleep(1);
-
-			return folder;
+			//Thread.Sleep(1);
 		}
 
-		public List<PatrolFolder> LoadFolders(string uri, CancellationToken? token = null)
+		return list;
+	}
+
+	/// <summary>
+	/// Loads all folders recursively, including start folder
+	/// </summary>
+	/// <param name="uri"></param>
+	/// <param name="token"></param>
+	/// <returns></returns>
+	public List<PatrolFolder> LoadAllFolders(string uri, CancellationToken? token = null)
+	{
+		_output?.WriteLine($"LoadAllFolders: {uri}");
+		var start = new DirectoryInfo(uri);
+		AssertPathTooLongException(start.FullName);
+
+		var list = new List<PatrolFolder>();			
+		Queue<string> dirs = new Queue<string>();
+		dirs.Enqueue(start.FullName);
+		
+		while (dirs.Any())
 		{
-			var list = new List<PatrolFolder>();
-			var start = new DirectoryInfo(uri);
-			foreach (var dir in start.EnumerateDirectories("*", new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = false }))
-			{
-				var folder = new PatrolFolder(dir);
-				var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
-				list.Add(folder);
+			var d = dirs.Dequeue();
+			_output?.WriteLine($"LoadFolder: {d}");
+			AssertPathTooLongException(d);
 
-				// cancellation returns empty list
-				if (token?.IsCancellationRequested ?? false) return new List<PatrolFolder>();
+			// skip this horrible folder
+			var dir = new DirectoryInfo(d);
+			if (AssertPathExcludedRoot(dir)) continue;
 
-				_progress?.Report(state);
-				_change?.Invoke(state);
-
-				Thread.Sleep(1);
-			}
-
-			return list;
-		}
-
-		public List<PatrolFolder> LoadAllFolders(string uri, CancellationToken? token = null)
-		{
-			var list = new List<PatrolFolder>();
+			var folder = new PatrolFolder(d);
+			var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
+			list.Add(folder);
 			
-			var start = new DirectoryInfo(uri);
-			Queue<string> dirs = new Queue<string>();
-			dirs.Enqueue(start.FullName);
-			
-			while (dirs.Any())
+			// cancellation returns empty list
+			if (token?.IsCancellationRequested ?? false) return new List<PatrolFolder>();
+
+			_notify?.Invoke(folder);
+			_change?.Invoke(state);
+			_progress?.Report(state);
+
+			//Thread.Sleep(1);
+
+			foreach (var f in Directory.EnumerateDirectories(d, "*", new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = _stopOnError, RecurseSubdirectories = false }))
 			{
-				var dir = dirs.Dequeue();
-				var folder = new PatrolFolder(dir);
-				var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
-				list.Add(folder);
-				
-				// cancellation returns empty list
-				if (token?.IsCancellationRequested ?? false) return new List<PatrolFolder>();
-
-				_progress?.Report(state);
-				_change?.Invoke(state);
-
-				Thread.Sleep(1);
-
-				foreach (var f in Directory.EnumerateDirectories(dir, "*", new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = false }))
-				{
-					dirs.Enqueue(f);
-				}
-			}
-
-			return list;
-		}
-
-
-		/*
-		public async Task LoadFolders(DirectoryInfo dir, CancellationToken token)
-		{
-			await Task.Run(() =>
-			{
-				Queue<string> dirs = new Queue<string>();
-				dirs.Enqueue(dir.FullName);
-				while (dirs.Any())
-				{
-					if (token.IsCancellationRequested) break;
-					var d = dirs.Dequeue();
-					_progress.Report(new PatrolFolder(d));
-					foreach(var s in Directory.EnumerateDirectories(d))
-					{
-						dirs.Enqueue(s);
-					}
-				}
-			});
-		}
-		*/
-
-		/*
-		public async Task LoadFolders(DirectoryInfo dir)
-		{
-			await Task.Run(() =>
-			{
-				CollectFolders(dir.FullName);
-			});
-		}
-
-		private void CollectFolders(string path)
-		{
-
-			DirectoryInfo directoryInfo = new DirectoryInfo(path);
-			_tasks.Add(Task.Run(() => CrawlFolder(directoryInfo)));
-
-			Task? taskToWaitFor;
-			while (_tasks.TryTake(out taskToWaitFor))
-				taskToWaitFor.Wait();
-		}
-
-
-		private void CrawlFolder(DirectoryInfo dir)
-		{
-			try
-			{
-				DirectoryInfo[] directoryInfos = dir.GetDirectories();
-				foreach (DirectoryInfo childInfo in directoryInfos)
-				{
-					// here may be dragons using enumeration variable as closure!!
-					DirectoryInfo di = childInfo;
-					_tasks.Add(Task.Run(() => CrawlFolder(di)));
-				}
-				_progress.Report(new PatrolFolder(dir.FullName));
-				_folderCount++;
-			}
-			catch (Exception ex)
-			{
-				while (ex != null)
-				{
-					Console.WriteLine($"{ex.GetType()} {ex.Message}\n{ex.StackTrace}");
-					ex = ex?.InnerException ?? new Exception("InnerException is null");
-				}
+				dirs.Enqueue(f);
 			}
 		}
-		*/
+
+		return list;
+	}
+
+	private bool AssertPathExcludedRoot(DirectoryInfo dir)
+	{
+		return ((dir.Parent?.Name ?? "").EndsWith(@":\") && _excludedRoots.Contains(dir.Name.ToLowerInvariant()));
+	}
+
+	private bool AssertPathTooLongException(string uri)
+	{
+		if (!PathUtils.IsMaxPath(uri)) return false;
+
+		var message = $"FolderPathTooLong: {uri}";
+		_output?.WriteLine(message);
+		var exception = new PathTooLongException(message);
+		Exceptions.Add(exception);
+
+		if (_stopOnError)
+			throw exception;
+		else
+			return true;
 	}
 }

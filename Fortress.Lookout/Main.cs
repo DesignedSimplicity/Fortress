@@ -1,4 +1,4 @@
-﻿using Fortress.Core;
+﻿using Fortress.Core.Common;
 using Fortress.Core.Entities;
 using Fortress.Core.Services;
 using System;
@@ -17,7 +17,7 @@ using System.Xml.Linq;
 
 namespace Fortress.Lookout
 {
-	public partial class Main : Form
+    public partial class Main : Form
 	{
 		private ConcurrentDictionary<string, PatrolFile> _fileCache;
 		private Dictionary<string, TreeNode> _nodeCache;
@@ -77,15 +77,15 @@ namespace Fortress.Lookout
 					var item = listView.Items.Add(file.Name);
 					switch (file.Status)
 					{
-						case PatrolFileStatus.Exception:
+						case FileStatus.Error:
 							item.ForeColor = Color.DarkRed; break;
-						case PatrolFileStatus.NotFound:
+						case FileStatus.NotFound:
 							item.ForeColor = Color.DarkOrange; break;
-						case PatrolFileStatus.Matched:
+						case FileStatus.Matched:
 							item.ForeColor = Color.DarkMagenta; break;
-						case PatrolFileStatus.Hashed:
+						case FileStatus.Hashed:
 							item.ForeColor = Color.DarkCyan; break;
-						case PatrolFileStatus.Verified:
+						case FileStatus.Verified:
 							item.ForeColor = Color.DarkGreen; break;
 					}
 				}

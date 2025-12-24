@@ -1,4 +1,4 @@
-﻿using Fortress.Core;
+﻿using Fortress.Core.Common;
 using Fortress.Core.Entities;
 using Fortress.Core.Services;
 using System;
@@ -74,7 +74,7 @@ namespace Fortress.Lookout
 				var files = LoadAllFiles(folders.OrderBy(x => x.Uri));
 
 				timer.Stop();
-				source.Root = root;
+				source.RootFolder = root;
 				source.AllFolders = folders;
 				source.AllFiles = files;
 				source.ElapsedTime = timer.Elapsed;
@@ -93,7 +93,7 @@ namespace Fortress.Lookout
 
 			foreach (var sub in folders)
 			{
-				var files = _queryFiles.LoadFiles(sub.Uri, false, _cancel.Token);
+				var files = _queryFiles.LoadFiles(sub.Uri, null, false, _cancel.Token);
 				sub.PatrolFiles.AddRange(files);
 				list.AddRange(files);
 				(_progressFiles as IProgress<PatrolFolder>)?.Report(sub);

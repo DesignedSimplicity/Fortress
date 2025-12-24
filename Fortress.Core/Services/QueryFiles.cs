@@ -1,69 +1,98 @@
-﻿using Fortress.Core.Entities;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Fortress.Core.Common;
+using Fortress.Core.Entities;
+using Fortress.Core.Services.Settings;
 
-namespace Fortress.Core.Services
+namespace Fortress.Core.Services;
+
+public delegate void FileNotify(PatrolFile file);
+
+public class QueryFiles
 {
+	public List<Exception> Exceptions = new();
+	private readonly IProgress<PatrolFileState>? _progress;
+	private readonly StreamWriter? _output;
+	private readonly FileNotify? _notify;
+	private readonly bool _stopOnError;
+	/*
+	public delegate void FileStateChange(PatrolFileState state);
 
-	public class QueryFiles
+	private FolderStateChange? _change;
+
+	private int _folderCount { get; set; }
+	private readonly ConcurrentQueue<DirectoryInfo> _folderQueue = new ConcurrentQueue<DirectoryInfo>();
+	private readonly ConcurrentBag<Task> _tasks = new ConcurrentBag<Task>();
+
+	public QueryFolders(FolderStateChange progress)
 	{
-		private IProgress<PatrolFileState>? _progress;
-		/*
-		public delegate void FileStateChange(PatrolFileState state);
+		_change = progress;
+	}
+	*/
+	public QueryFiles()
+	{
+	}
 
-		private FolderStateChange? _change;
+	public QueryFiles(QueryFilesSettings settings)
+	{
+		_output = settings.Output;
+		_notify = settings.Notify;
+		_stopOnError = settings.StopOnError;
+	}
 
-		private int _folderCount { get; set; }
-		private readonly ConcurrentQueue<DirectoryInfo> _folderQueue = new ConcurrentQueue<DirectoryInfo>();
-		private readonly ConcurrentBag<Task> _tasks = new ConcurrentBag<Task>();
+	public QueryFiles(StreamWriter? output, FileNotify? notify)
+	{
+		_output = output;
+		_notify = notify;
+	}
 
-		public QueryFolders(FolderStateChange progress)
+	public QueryFiles(IProgress<PatrolFileState> progress)
+	{
+		_progress = progress;
+	}
+
+	public List<PatrolFile> LoadAllFiles(string uri, string? filter = "", CancellationToken? token = null)
+	{
+		return LoadFiles(uri, filter, true, token);
+	}
+
+	public List<PatrolFile> LoadFiles(string uri, string? filter = "", bool recursive = false, CancellationToken? token = null)
+	{
+		var list = new List<PatrolFile>();
+		var dir = new DirectoryInfo(uri);
+
+		foreach (var f in dir.GetFiles(String.IsNullOrWhiteSpace(filter) ? string.Empty : filter, new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = !_stopOnError, RecurseSubdirectories = recursive, MatchType = MatchType.Win32 }))
 		{
-			_change = progress;
-		}
-		*/
-		public QueryFiles()
-		{
-		}
+			_output?.WriteLine($"LoadFile: {f.FullName}");
+			AssertPathTooLongException(f.FullName);
 
-		public QueryFiles(IProgress<PatrolFileState> progress)
-		{
-			_progress = progress;
-		}
+			// cancellation returns empty list
+			if (token?.IsCancellationRequested ?? false) return new List<PatrolFile>();
 
-		public async Task<List<PatrolFile>> LoadFilesAsync(string uri, bool recursive = false, CancellationToken? token = null)
-		{
-			return await Task.Run(() => {
-				return LoadFiles(uri, recursive, token);
-			});
+			var file = new PatrolFile(f);
+			var state = new PatrolFileState(file, FileStatus.Exists);
+			list.Add(file);
 
-		}
-
-		public List<PatrolFile> LoadFiles(string uri, bool recursive = false, CancellationToken? token = null)
-		{
-			var list = new List<PatrolFile>();
-			var dir = new DirectoryInfo(uri);
+			_notify?.Invoke(file);
+			_progress?.Report(state);
+			//_change?.Invoke(state);
 			
-			foreach (var f in dir.EnumerateFiles("*.*", new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = recursive }))
-			{
-				// cancellation returns empty list
-				if (token?.IsCancellationRequested ?? false) return new List<PatrolFile>();
-
-				var file = new PatrolFile(f);
-				var state = new PatrolFileState(file, PatrolFileStatus.Exists);
-				list.Add(file);
-
-				_progress?.Report(state);
-				//_change?.Invoke(state);
-				
-				Thread.Sleep(1);
-			}
-
-			return list;
+			//Thread.Sleep(1);
 		}
+
+		return list;
+	}
+
+	private bool AssertPathTooLongException(string uri)
+	{
+		if (!PathUtils.IsMaxPath(uri)) return false;
+
+		var message = $"File path too long ({uri.Length}): '{uri}'.";
+		_output?.WriteLine(message);
+		var exception = new PathTooLongException(message);
+		Exceptions.Add(exception);
+
+		if (_stopOnError)
+			throw exception;
+		else
+			return true;
 	}
 }

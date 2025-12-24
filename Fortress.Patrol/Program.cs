@@ -1,5 +1,7 @@
-﻿using Fortress.Core.Entities;
+﻿using CommandLine;
 using Fortress.Core.Services;
+using Pastel;
+using System.Drawing;
 
 namespace Fortress.Patrol
 {
@@ -7,23 +9,30 @@ namespace Fortress.Patrol
 	{
 		static void Main(string[] args)
 		{
+			var parser = new Parser(options =>
+			{
+				options.AutoHelp = true;
+				options.AutoVersion = true;
+				options.CaseSensitive = false;
+				options.CaseInsensitiveEnumValues = true;
+				options.HelpWriter = Console.Out;
+			});
+
 			var engine = new Engine();
-			engine.Start();
-		}
 
-	}
+			//args = new string[]  { "create", "-d", @"N:\_TEST", "-rv", "-ex" };			
+			//args = new string[] { "create", "--d", @"\\Blaze\Backup\Backup" };
 
-	public class Engine
-	{
-		public void Start()
-		{
-			var q = new QueryFolders(this.FolderStateChange);
-			q.LoadAllFolders(@"N:\");
-		}
+			var result = parser.ParseArguments<CreateOptions, VerifyOptions>(args)
+				.WithParsed<CreateOptions>(x => engine.Create(x))
+				.WithParsed<VerifyOptions>(x => engine.Verify(x));
 
-		public void FolderStateChange(PatrolFolderState state)
-		{
-			Console.WriteLine(state.Folder.Uri);
+			/*
+			if (result.Tag == ParserResultType.NotParsed)
+			{
+				Console.WriteLine($"Error parsing options".Pastel(Color.Red));
+			}
+			*/
 		}
 	}
 }
