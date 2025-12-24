@@ -82,7 +82,7 @@ namespace Fortress.Core.Actions
                 // show verbose log if requested
                 if (verbose)
                 {
-                    if (files.Any()) _console?.WriteLine(ConsoleDivider.Pastel(Color.LightGoldenrodYellow));
+                    if (files.Count > 0) _console?.WriteLine(ConsoleDivider.Pastel(Color.LightGoldenrodYellow));
                     foreach (var file in files)
                     {
                         _console?.WriteLine($"{file.Name}".Pastel(Color.LightGoldenrodYellow));
@@ -103,20 +103,20 @@ namespace Fortress.Core.Actions
             // show summary
             _console?.WriteLine();
             _console?.WriteLine(ConsoleSection.Pastel(Color.Orange));
-            _console?.WriteLine($"Folders: {execute.Folders.Count.ToString(WholeNumberFormat)}\tFiles: {execute.Files.Count.ToString(WholeNumberFormat)}\tTotal Size: {execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}".Pastel(Color.Orange));
+            _console?.WriteLine($"Folders:\t{execute.Folders.Count.ToString(WholeNumberFormat)}\tFiles: {execute.Files.Count.ToString(WholeNumberFormat)}\tTotal Size: {execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}".Pastel(Color.Orange));
             _console?.WriteLine(ConsoleDivider.Pastel(Color.Orange));
 
             // add collected exceptions
             execute.Exceptions.AddRange(queryFolders.Exceptions);
             execute.Exceptions.AddRange(queryFiles.Exceptions);
-            var exceptions = execute.Exceptions.Any();
+            var exceptions = execute.Exceptions.Count > 0;
 
             // show expcetions
             if (exceptions)
             {
                 _console?.WriteLine();
                 _console?.WriteLine(ConsoleFooter.Pastel(Color.Red));
-                _console?.WriteLine($"Exceptions: {execute.Exceptions.Count}".Pastel(Color.Red));
+                _console?.WriteLine($"Exceptions:\t{execute.Exceptions.Count}".Pastel(Color.Red));
                 foreach (var ex in execute.Exceptions)
                 {
                     _console?.WriteLine(ConsoleDivider.Pastel(Color.Red));
@@ -177,11 +177,11 @@ namespace Fortress.Core.Actions
 
             // show result in console
             _console?.WriteLine(ConsoleDivider);
-            _console?.WriteLine($"RunName: {execute.RunName}");
-            _console?.WriteLine($"SourceFolderUri: {execute.SourceFolderUri}");
-            _console?.WriteLine($"LogFileUri: {execute.LogFileUri}");
-            _console?.WriteLine($"OutputFileUri: {execute.OutputFileUri}");
-            _console?.WriteLine($"ReportFileUri: {execute.ReportFileUri}");
+            _console?.WriteLine($"RunName:\t{execute.RunName}");
+            _console?.WriteLine($"SourceFolderUri:\t{execute.SourceFolderUri}");
+            _console?.WriteLine($"LogFileUri:\t{execute.LogFileUri}");
+            _console?.WriteLine($"OutputFileUri:\t{execute.OutputFileUri}");
+            _console?.WriteLine($"ReportFileUri:\t{execute.ReportFileUri}");
 
             // return execute package
             return execute;
@@ -191,86 +191,88 @@ namespace Fortress.Core.Actions
         {
             // show prep in console
             _console?.WriteLine(ConsoleSection.Pastel(Color.Cyan));
-            _console?.WriteLine($"Execute:\t{(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(Color.Cyan));
+            _console?.WriteLine($"Execute: {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(Color.Cyan));
             _console?.WriteLine(ConsoleDivider.Pastel(Color.Cyan));
 
             //long totalDataProcessed = 0;
             //var stopwatch = new Stopwatch();
             var exceptions = new List<Exception>();
             var verbose = execute.Request.VerboseLog;
-            using (var hasher = new GetHash())
+            var hasher = new GetHash();
+
+            // prepare totals
+            var fileIndex = 0;
+            var fileCount = execute.Files.Count;
+            foreach (var folder in execute.Folders.OrderBy(x => x.Uri))
             {
-                // prepare totals
-                var fileIndex = 0;
-                var fileCount = execute.Files.Count;
-                foreach (var folder in execute.Folders.OrderBy(x => x.Uri))
+                var anyFiles = folder.PatrolFiles.Count > 0;
+
+                if (verbose)
+                    _console?.WriteLine($"Folder: {folder.Uri}".Pastel(anyFiles ? Color.Goldenrod : Color.DarkGoldenrod));
+                else
+                    _console?.Write("*".Pastel(Color.Goldenrod));
+
+                if (anyFiles)
                 {
-                    var anyFiles = folder.PatrolFiles.Any();
+                    if (verbose) _console?.WriteLine(ConsoleDivider.Pastel(Color.Gray));
 
-                    if (verbose)
-                        _console?.WriteLine($"Folder: {folder.Uri}".Pastel(anyFiles ? Color.Goldenrod : Color.DarkGoldenrod));
-                    else
-                        _console?.Write("*".Pastel(Color.Goldenrod));
-
-                    if (anyFiles)
+                    foreach (var file in folder.PatrolFiles.OrderBy(x => x.Name))
                     {
-                        if (verbose) _console?.WriteLine(ConsoleDivider.Pastel(Color.Gray));
+                        fileIndex++;
 
-                        foreach (var file in folder.PatrolFiles.OrderBy(x => x.Name))
+                        if (verbose)
                         {
-                            fileIndex++;
+                            _console?.Write($"[{fileIndex} of {fileCount}] ".Pastel(Color.Gray));
+                            _console?.Write($"{file.Name} -> ");
+                            _console?.Write($"{file.Size:###,###,###,###,##0}".Pastel(Color.LightYellow));
+                        }
 
+                        if (execute.Request.IndexOnly)
+                        {
                             if (verbose)
+                                _console?.WriteLine($" LOG".Pastel(Color.GreenYellow));
+                            else
+                                _console?.Write(".".Pastel(Color.Goldenrod));
+                        }
+                        else
+                        {
+                            // calculate hash and output hash to log
+                            var hashType = execute.Request.HashType;
+                            if (verbose) _console?.Write($" {hashType.ToString().Pastel(Color.LightGreen)} = ");
+                            try
                             {
-                                _console?.Write($"[{fileIndex} of {fileCount}] ".Pastel(Color.Gray));
-                                _console?.Write($"{file.Name} -> ");
-                                _console?.Write($"{file.Size:###,###,###,###,##0}".Pastel(Color.LightYellow));
-                            }
-
-                            if (execute.Request.IndexOnly)
-                            {
+                                var result = hasher.Calculate(file, hashType);
                                 if (verbose)
-                                    _console?.WriteLine($" LOG".Pastel(Color.GreenYellow));
+                                {
+                                    var bytesPerMillisecond = result.FileSize * 1.0 / (result.Milliseconds + 1.0);
+                                    _console?.WriteLine($"{result.HashValue.Pastel(Color.Green)} @ {bytesPerMillisecond:###,###,###,###,##0} b/ms".Pastel(Color.Gray));
+                                }
                                 else
                                     _console?.Write(".".Pastel(Color.Goldenrod));
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                // calculate hash and output hash to log
-                                var hashType = execute.Request.HashType;
-                                if (verbose) _console?.Write($" {hashType.ToString().Pastel(Color.LightGreen)} = ");
-                                try
-                                {
-                                    var result = hasher.Calculate(file, hashType);
-                                    if (verbose)
-                                        _console?.WriteLine($"{result.HashValue.Pastel(Color.Green)} @ {result.BytesPerMillisecond:###,###,###,###,##0} b/ms".Pastel(Color.Gray));
-                                    else
-                                        _console?.Write(".".Pastel(Color.Goldenrod));
-                                }
-                                catch (Exception ex)
-                                {
-                                    if (verbose)
-                                        _console?.WriteLine(ex.GetType().ToString().Pastel(Color.Red));
-                                    else
-                                        _console?.Write("!".Pastel(Color.Red));
+                                if (verbose)
+                                    _console?.WriteLine(ex.GetType().ToString().Pastel(Color.Red));
+                                else
+                                    _console?.Write("!".Pastel(Color.Red));
 
-                                    file.Status = FileStatus.Error;
-                                    exceptions.Add(ex);
+                                file.Status = FileStatus.Error;
+                                exceptions.Add(ex);
 
-                                    // log exception and re-throw if not silent
-                                    if (execute.Request.StopOnError) throw;
-                                }
+                                // log exception and re-throw if not silent
+                                if (execute.Request.StopOnError) throw;
                             }
                         }
-
-                        if (verbose) _console?.WriteLine(ConsoleDivider.Pastel(Color.Goldenrod));
                     }
+
+                    if (verbose) _console?.WriteLine(ConsoleDivider.Pastel(Color.Goldenrod));
                 }
             }
             _console?.WriteLine();
 
             // show expcetions
-            if (exceptions.Any())
+            if (exceptions.Count > 0)
             {
                 _console?.WriteLine();
                 _console?.WriteLine(ConsoleFooter.Pastel(Color.Red));
@@ -304,10 +306,10 @@ namespace Fortress.Core.Actions
             if (verbose) Summary(review);
 
             _console?.WriteLine(ConsoleDivider.Pastel(color));
-            _console?.WriteLine($"Mode:\tCreate {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(color));
-            _console?.WriteLine($"Time:\t{review.Source.ElapsedTime:hh\\:mm\\:ss}".Pastel(color));
-            _console?.WriteLine($"Files:\t{execute.Files.Count.ToString(WholeNumberFormat)}".Pastel(color));
-            _console?.WriteLine($"Folders:\t{execute.Folders.Count.ToString(WholeNumberFormat)}".Pastel(color));
+            _console?.WriteLine($"Patrol Mode:\tCreate {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(color));
+            _console?.WriteLine($"Elapsed Time:\t{review.Source.ElapsedTime:hh\\:mm\\:ss}".Pastel(color));
+            _console?.WriteLine($"Folder Count:\t{execute.Folders.Count.ToString(WholeNumberFormat)}".Pastel(color));
+            _console?.WriteLine($"File Count:\t{execute.Files.Count.ToString(WholeNumberFormat)}".Pastel(color));
             _console?.WriteLine(ConsoleFooter.Pastel(color));
         }
 
@@ -373,7 +375,7 @@ namespace Fortress.Core.Actions
 			_console?.WriteLine($"Export: {execute.ExportFileUri}".Pastel(color));
 
             // create export file
-            ExportFileCsv(execute.Files.OrderBy(x => x.Uri), execute.ExportFileUri);
+            ExportFileCsv(execute.Files.OrderBy(static x => x.Uri), execute.ExportFileUri);
 		}
 
 		private void Output(CreatePatrolReview review)
@@ -390,16 +392,15 @@ namespace Fortress.Core.Actions
 			using (StreamWriter output = File.CreateText(execute.OutputFileUri))
 			{
 				output.WriteLine($"# Generated {execute.Request.HashType} with Patrol at UTC {DateTime.UtcNow}");
-				output.WriteLine($"# https://github.com/DesignedSimplicity/Expedition/");
 				output.WriteLine($"# --------------------------------------------------");
 				output.WriteLine();
 				output.WriteLine($"# System:\t{execute.SystemName}");
 				output.WriteLine($"# Source:\t{execute.SourceFolderUri}");
 				//output.WriteLine($"# Target Folder: {execute.PatrolSource.TargetFolderUri}");
-				output.WriteLine($"# Hash:\t\t{execute.Request.HashType}");
-				output.WriteLine($"# Size:\t\t{execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}");
-				output.WriteLine($"# Files:\t{execute.Files.Count.ToString(WholeNumberFormat)}");
-				output.WriteLine($"# Folders:{execute.Folders.Count.ToString(WholeNumberFormat)}");
+				output.WriteLine($"# Hash:\t\t\t{execute.Request.HashType}");
+				output.WriteLine($"# Size:\t\t\t{execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}");
+				output.WriteLine($"# Files:\t\t{execute.Files.Count.ToString(WholeNumberFormat)}");
+				output.WriteLine($"# Folders:\t{execute.Folders.Count.ToString(WholeNumberFormat)}");
 				if (execute.Exceptions.Count() > 0) output.WriteLine($"# Errors:\t{execute.Exceptions.Count().ToString(WholeNumberFormat)}");
 				output.WriteLine($"# --------------------------------------------------");
 
@@ -453,8 +454,8 @@ namespace Fortress.Core.Actions
             {
                 // format and write checksum to stream
                 report.PopulateSource(review.Source);
-                report.PopulateFolders(execute.Folders.OrderBy(x => x.Uri));
-                report.PopulateFiles(execute.Files.OrderBy(x => x.Uri));
+                report.PopulateFolders(execute.Folders.OrderBy(static x => x.Uri));
+                report.PopulateFiles(execute.Files.OrderBy(static x => x.Uri));
 
                 // close out report
                 report.SaveAs(execute.ReportFileUri);
