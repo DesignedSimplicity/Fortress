@@ -178,8 +178,8 @@ namespace Fortress.Core.Actions
             // show result in console
             _console?.WriteLine(ConsoleDivider);
             _console?.WriteLine($"RunName:\t{execute.RunName}");
-            _console?.WriteLine($"SourceFolderUri:\t{execute.SourceFolderUri}");
             _console?.WriteLine($"LogFileUri:\t{execute.LogFileUri}");
+            _console?.WriteLine($"StartFolderUri:\t{execute.SourceFolderUri}");
             _console?.WriteLine($"OutputFileUri:\t{execute.OutputFileUri}");
             _console?.WriteLine($"ReportFileUri:\t{execute.ReportFileUri}");
 
@@ -397,11 +397,11 @@ namespace Fortress.Core.Actions
 				output.WriteLine($"# System:\t{execute.SystemName}");
 				output.WriteLine($"# Source:\t{execute.SourceFolderUri}");
 				//output.WriteLine($"# Target Folder: {execute.PatrolSource.TargetFolderUri}");
-				output.WriteLine($"# Hash:\t\t\t{execute.Request.HashType}");
-				output.WriteLine($"# Size:\t\t\t{execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}");
-				output.WriteLine($"# Files:\t\t{execute.Files.Count.ToString(WholeNumberFormat)}");
+				output.WriteLine($"# Hash:\t\t{execute.Request.HashType}");
+				output.WriteLine($"# Size:\t\t{execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}");
+				output.WriteLine($"# Files:\t{execute.Files.Count.ToString(WholeNumberFormat)}");
 				output.WriteLine($"# Folders:\t{execute.Folders.Count.ToString(WholeNumberFormat)}");
-				if (execute.Exceptions.Count() > 0) output.WriteLine($"# Errors:\t{execute.Exceptions.Count().ToString(WholeNumberFormat)}");
+				if (execute.Exceptions.Count > 0) output.WriteLine($"# Errors:\t{execute.Exceptions.Count.ToString(WholeNumberFormat)}");
 				output.WriteLine($"# --------------------------------------------------");
 
 				// prepare for files output
@@ -416,15 +416,12 @@ namespace Fortress.Core.Actions
 				output.WriteLine($"# --------------------------------------------------");
 				output.WriteLine();
 
-				// format and write checksum to stream
-				foreach (var file in execute.Files.OrderBy(x => x.Uri))
+                // format and write checksum to stream
+                var relativeBaseUri = PathUtils.FixUri(execute.SourceFolderUri, true);
+                foreach (var file in execute.Files.OrderBy(x => x.Uri))
 				{
-                    
-                    // TODO - make relative file URI
-
-
-					var path = file.Uri;// execute.GetOuputPath(file.Uri);
-					output.WriteLine($"{(execute.Request.HashType == HashType.Md5 ? file.Md5 : file.Sha512)} {path}");
+					var path = file.Uri[relativeBaseUri.Length..];
+                    output.WriteLine($"{(execute.Request.HashType == HashType.Md5 ? file.Md5 : file.Sha512)} {path}");
 				}
 
 				// clean up output file
