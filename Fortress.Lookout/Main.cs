@@ -60,7 +60,7 @@ namespace Fortress.Lookout
 		private void TreeView_AfterSelect(object? sender, TreeViewEventArgs e)
 		{
 			var selectedNode = e.Node;
-			var uri = selectedNode?.Tag.ToString();
+			var uri = selectedNode?.Tag?.ToString();
 			if (!String.IsNullOrEmpty(uri))
 			{
 				var key = uri.ToLowerInvariant();

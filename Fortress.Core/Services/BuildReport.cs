@@ -23,8 +23,8 @@ public sealed class BuildReport : IDisposable
 
 	public BuildReport()
 	{
-		ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-		_package = new ExcelPackage();
+        ExcelPackage.License.SetNonCommercialOrganization("DesignedSimplicity");
+        _package = new ExcelPackage();
 		_files = NewWorksheet("Files");
 		_folders = NewWorksheet("Folders");
 		_sources = NewWorksheet("Sources");

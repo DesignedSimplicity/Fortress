@@ -15,16 +15,16 @@ namespace Fortress.Patrol
 		public void Create(CreateOptions c)
 		{
 			Console.WriteLine($"Create");
-			Console.WriteLine($"Name:\t {c.NamePrefix}");
-			Console.WriteLine($"Uri:\t {c.DirectoryUri}");
-			Console.WriteLine($"Search:\t {c.SearchFilter}");
-			Console.WriteLine($"Hash:\t {c.HashType}");
-			Console.WriteLine($"Report:\t {c.CreateReport}");
-			Console.WriteLine($"Index:\t {c.IndexOnly}");
-			Console.WriteLine($"Error:\t {c.StopOnError}");
-			Console.WriteLine($"Flat:\t {c.FlatFolder}");
-			Console.WriteLine($"Log:\t {c.LogOutput}");
-			Console.WriteLine($"Verbose: {c.VerboseLog}");
+			Console.WriteLine($"Name:\t{c.NamePrefix}");
+			Console.WriteLine($"Uri:\t{c.DirectoryUri}");
+			Console.WriteLine($"Search:\t{c.SearchFilter}");
+			Console.WriteLine($"Hash:\t{c.HashType}");
+			Console.WriteLine($"Report:\t{c.CreateReport}");
+			Console.WriteLine($"Index:\t{c.IndexOnly}");
+			Console.WriteLine($"Error:\t{c.StopOnError}");
+			Console.WriteLine($"Flat:\t{c.FlatFolder}");
+			Console.WriteLine($"Log:\t{c.LogOutput}");
+			Console.WriteLine($"Verbose:\t{c.VerboseLog}");
 
 			//Console.SetWindowSize(200, 50);
 
