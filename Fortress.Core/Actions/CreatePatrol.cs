@@ -306,13 +306,16 @@ namespace Fortress.Core.Actions
 
             var color = Color.Violet;
             _console?.WriteLine(ConsoleSection.Pastel(color));
-            _console?.WriteLine($"Review:         {execute.LogFileUri}".Pastel(color));
+            _console?.WriteLine($"LogFileUri:     {execute.LogFileUri}".Pastel(color));
 
             Output(review);
             Export(review);
             Report(review);
 
-            if (verbose) Summary(review);
+            if (verbose)
+            {
+                Summary(review);
+            }
 
             _console?.WriteLine(ConsoleDivider.Pastel(color));
             _console?.WriteLine($"Patrol Mode:    Create {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(color));
@@ -394,7 +397,7 @@ namespace Fortress.Core.Actions
 
 			var color = Color.Violet;
 			//_console?.WriteLine(ConsoleSection.Pastel(color));
-			_console?.WriteLine($"Output:         {execute.OutputFileUri}".Pastel(color));
+			_console?.WriteLine($"OutputFileUri:  {execute.OutputFileUri}".Pastel(color));
 
             // create md5/sha512 output file header
             //using (StreamWriter output = new StreamWriter(execute.OutputFileUri, false, Encoding.Unicode))
