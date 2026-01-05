@@ -33,11 +33,14 @@ namespace Fortress.Core.Actions
 
             // show prep in console
             _console?.WriteLine(ConsoleSection.Pastel(Color.Orange));
-            _console?.WriteLine($"Prepare:\t{execute.SourceFolderUri}".Pastel(Color.Orange));
+            _console?.WriteLine($"Prepare:        {execute.SourceFolderUri}".Pastel(Color.Orange));
             _console?.WriteLine(ConsoleDivider.Pastel(Color.Orange));
 
             // prepare output files
-            if (execute.CreateLog) _log = new StreamWriter(execute.LogFileUri);
+            if (execute.CreateLog)
+            {
+                _log = new StreamWriter(execute.LogFileUri);
+            }
             var verbose = execute.Request.VerboseLog;
 
             // prepare query system
@@ -56,7 +59,7 @@ namespace Fortress.Core.Actions
 
             // start with root folder
             var root = queryFolders.LoadFolder(execute.SourceFolderUri);
-            Queue<PatrolFolder> queue = new Queue<PatrolFolder>();
+            var queue = new Queue<PatrolFolder>();
             queue.Enqueue(root);
 
             // until all folders are complete
@@ -70,13 +73,19 @@ namespace Fortress.Core.Actions
                 var folders = queryFolders.LoadFolders(folder.Uri);
                 folder.PatrolFolders.AddRange(folders);
                 execute.Folders.Add(folder);
-                if (verbose) _console?.Write($"\tFolders: {folders.Count}".Pastel(Color.Goldenrod));
+                if (verbose)
+                {
+                    _console?.Write($"\tFolders: {folders.Count}".Pastel(Color.Goldenrod));
+                }
 
                 // load files for current folder
                 var files = queryFiles.LoadFiles(folder.Uri, request.SearchFilter, false).OrderBy(x => x.Name).ToList();
                 folder.PatrolFiles.AddRange(files);
                 execute.Files.AddRange(files);
-                if (verbose) _console?.Write($"\tFiles: {files.Count}".Pastel(Color.Goldenrod));
+                if (verbose)
+                {
+                    _console?.Write($"\tFiles: {files.Count}".Pastel(Color.Goldenrod));
+                }
                 _console?.WriteLine();
 
                 // show verbose log if requested
@@ -103,7 +112,7 @@ namespace Fortress.Core.Actions
             // show summary
             _console?.WriteLine();
             _console?.WriteLine(ConsoleSection.Pastel(Color.Orange));
-            _console?.WriteLine($"Folders:\t{execute.Folders.Count.ToString(WholeNumberFormat)}\tFiles: {execute.Files.Count.ToString(WholeNumberFormat)}\tTotal Size: {execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}".Pastel(Color.Orange));
+            _console?.WriteLine($"Folders:        {execute.Folders.Count.ToString(WholeNumberFormat)}\tFiles: {execute.Files.Count.ToString(WholeNumberFormat)}\tTotal Size: {execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}".Pastel(Color.Orange));
             _console?.WriteLine(ConsoleDivider.Pastel(Color.Orange));
 
             // add collected exceptions
@@ -116,7 +125,7 @@ namespace Fortress.Core.Actions
             {
                 _console?.WriteLine();
                 _console?.WriteLine(ConsoleFooter.Pastel(Color.Red));
-                _console?.WriteLine($"Exceptions:\t{execute.Exceptions.Count}".Pastel(Color.Red));
+                _console?.WriteLine($"Exceptions:    {execute.Exceptions.Count}".Pastel(Color.Red));
                 foreach (var ex in execute.Exceptions)
                 {
                     _console?.WriteLine(ConsoleDivider.Pastel(Color.Red));
@@ -177,11 +186,11 @@ namespace Fortress.Core.Actions
 
             // show result in console
             _console?.WriteLine(ConsoleDivider);
-            _console?.WriteLine($"RunName:\t{execute.RunName}");
-            _console?.WriteLine($"LogFileUri:\t{execute.LogFileUri}");
-            _console?.WriteLine($"StartFolderUri:\t{execute.SourceFolderUri}");
-            _console?.WriteLine($"OutputFileUri:\t{execute.OutputFileUri}");
-            _console?.WriteLine($"ReportFileUri:\t{execute.ReportFileUri}");
+            _console?.WriteLine($"RunName:        {execute.RunName}");
+            _console?.WriteLine($"LogFileUri:     {execute.LogFileUri}");
+            _console?.WriteLine($"StartFolderUri: {execute.SourceFolderUri}");
+            _console?.WriteLine($"OutputFileUri:  {execute.OutputFileUri}");
+            _console?.WriteLine($"ReportFileUri:  {execute.ReportFileUri}");
 
             // return execute package
             return execute;
@@ -191,7 +200,7 @@ namespace Fortress.Core.Actions
         {
             // show prep in console
             _console?.WriteLine(ConsoleSection.Pastel(Color.Cyan));
-            _console?.WriteLine($"Execute: {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(Color.Cyan));
+            _console?.WriteLine($"Execute:        {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(Color.Cyan));
             _console?.WriteLine(ConsoleDivider.Pastel(Color.Cyan));
 
             //long totalDataProcessed = 0;
@@ -276,7 +285,7 @@ namespace Fortress.Core.Actions
             {
                 _console?.WriteLine();
                 _console?.WriteLine(ConsoleFooter.Pastel(Color.Red));
-                _console?.WriteLine($"Exceptions: {exceptions.Count}".Pastel(Color.Red));
+                _console?.WriteLine($"Exceptions:     {exceptions.Count}".Pastel(Color.Red));
                 foreach (var ex in exceptions)
                 {
                     _console?.WriteLine(ConsoleDivider.Pastel(Color.Red));
@@ -297,7 +306,7 @@ namespace Fortress.Core.Actions
 
             var color = Color.Violet;
             _console?.WriteLine(ConsoleSection.Pastel(color));
-            _console?.WriteLine($"Review:\t{execute.LogFileUri}".Pastel(color));
+            _console?.WriteLine($"Review:         {execute.LogFileUri}".Pastel(color));
 
             Output(review);
             Export(review);
@@ -306,10 +315,10 @@ namespace Fortress.Core.Actions
             if (verbose) Summary(review);
 
             _console?.WriteLine(ConsoleDivider.Pastel(color));
-            _console?.WriteLine($"Patrol Mode:\tCreate {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(color));
-            _console?.WriteLine($"Elapsed Time:\t{review.Source.ElapsedTime:hh\\:mm\\:ss}".Pastel(color));
-            _console?.WriteLine($"Folder Count:\t{execute.Folders.Count.ToString(WholeNumberFormat)}".Pastel(color));
-            _console?.WriteLine($"File Count:\t{execute.Files.Count.ToString(WholeNumberFormat)}".Pastel(color));
+            _console?.WriteLine($"Patrol Mode:    Create {(execute.Request.IndexOnly ? "Index" : execute.Request.HashType)}".Pastel(color));
+            _console?.WriteLine($"Elapsed Time:   {review.Source.ElapsedTime:hh\\:mm\\:ss}".Pastel(color));
+            _console?.WriteLine($"Folder Count:   {execute.Folders.Count.ToString(WholeNumberFormat)}".Pastel(color));
+            _console?.WriteLine($"File Count:     {execute.Files.Count.ToString(WholeNumberFormat)}".Pastel(color));
             _console?.WriteLine(ConsoleFooter.Pastel(color));
         }
 
@@ -338,8 +347,8 @@ namespace Fortress.Core.Actions
             var color = Color.Pink;
             _console?.WriteLine(ConsoleDivider.Pastel(color));
 
-            _console?.Write($"Size:".Pastel(color));
-            _console?.Write($"\t{string.Format(format1, bytes)} Bytes    ".Pastel(color));
+            _console?.Write($"Size:           ".Pastel(color));
+            _console?.Write($"{string.Format(format1, bytes)} Bytes    ".Pastel(color));
             _console?.Write($"\t{string.Format(format2, kilobytes)} Kilobytes".Pastel(color));
             _console?.Write($"\t{string.Format(format3, megabytes)} Megabytes".Pastel(color));
             _console?.Write($"\t{string.Format(format4, gigabytes)} Gigabytes".Pastel(color));
@@ -347,8 +356,8 @@ namespace Fortress.Core.Actions
             _console?.WriteLine();
 
             color = Color.LightPink;
-            _console?.Write($"Time:".Pastel(color));
-            _console?.Write($"\t{string.Format(format1, time.TotalMilliseconds)} Msec     ".Pastel(color));
+            _console?.Write($"Time:           ".Pastel(color));
+            _console?.Write($"{string.Format(format1, time.TotalMilliseconds)} Msec     ".Pastel(color));
             _console?.Write($"\t{string.Format(format2, time.TotalSeconds)} Seconds  ".Pastel(color));
             _console?.Write($"\t{string.Format(format3, time.TotalMinutes)} Minutes  ".Pastel(color));
             _console?.Write($"\t{string.Format(format4, time.TotalHours)} Hours    ".Pastel(color));
@@ -356,8 +365,8 @@ namespace Fortress.Core.Actions
             _console?.WriteLine();
 
             color = Color.HotPink;
-            _console?.Write($"Rate:".Pastel(color));
-            _console?.Write($"\t{string.Format(format1, bpms)} B/Ms     ".Pastel(color));
+            _console?.Write($"Rate:           ".Pastel(color));
+            _console?.Write($"{string.Format(format1, bpms)} B/Ms     ".Pastel(color));
             _console?.Write($"\t{string.Format(format2, kbps)} KB/Sec   ".Pastel(color));
             _console?.Write($"\t{string.Format(format3, mbpm)} MB/Min   ".Pastel(color));
             _console?.Write($"\t{string.Format(format4, gbph)} GB/Hour  ".Pastel(color));
@@ -372,7 +381,7 @@ namespace Fortress.Core.Actions
 
 			var color = Color.Violet;
 			//_console?.WriteLine(ConsoleSection.Pastel(color));
-			_console?.WriteLine($"Export: {execute.ExportFileUri}".Pastel(color));
+			_console?.WriteLine($"Export:         {execute.ExportFileUri}".Pastel(color));
 
             // create export file
             ExportFileCsv(execute.Files.OrderBy(static x => x.Uri), execute.ExportFileUri);
@@ -385,55 +394,56 @@ namespace Fortress.Core.Actions
 
 			var color = Color.Violet;
 			//_console?.WriteLine(ConsoleSection.Pastel(color));
-			_console?.WriteLine($"Output: {execute.OutputFileUri}".Pastel(color));
+			_console?.WriteLine($"Output:         {execute.OutputFileUri}".Pastel(color));
 
-			// create md5/sha512 output file header
-			//using (StreamWriter output = new StreamWriter(execute.OutputFileUri, false, Encoding.Unicode))
-			using (StreamWriter output = File.CreateText(execute.OutputFileUri))
-			{
-				output.WriteLine($"# Generated {execute.Request.HashType} with Patrol at UTC {DateTime.UtcNow}");
-				output.WriteLine($"# --------------------------------------------------");
-				output.WriteLine();
-				output.WriteLine($"# System:\t{execute.SystemName}");
-				output.WriteLine($"# Source:\t{execute.SourceFolderUri}");
-				//output.WriteLine($"# Target Folder: {execute.PatrolSource.TargetFolderUri}");
-				output.WriteLine($"# Hash:\t\t{execute.Request.HashType}");
-				output.WriteLine($"# Size:\t\t{execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}");
-				output.WriteLine($"# Files:\t{execute.Files.Count.ToString(WholeNumberFormat)}");
-				output.WriteLine($"# Folders:\t{execute.Folders.Count.ToString(WholeNumberFormat)}");
-				if (execute.Exceptions.Count > 0) output.WriteLine($"# Errors:\t{execute.Exceptions.Count.ToString(WholeNumberFormat)}");
-				output.WriteLine($"# --------------------------------------------------");
+            // create md5/sha512 output file header
+            //using (StreamWriter output = new StreamWriter(execute.OutputFileUri, false, Encoding.Unicode))
+            using StreamWriter output = File.CreateText(execute.OutputFileUri);
+            output.WriteLine($"# Generated {execute.Request.HashType} with Patrol at UTC {DateTime.UtcNow}");
+            output.WriteLine($"# --------------------------------------------------");
+            output.WriteLine();
+            output.WriteLine($"# System:       {execute.SystemName}");
+            output.WriteLine($"# Source:       {execute.SourceFolderUri}");
+            //output.WriteLine($"# Target Folder: {execute.PatrolSource.TargetFolderUri}");
+            output.WriteLine($"# Hash:         {execute.Request.HashType}");
+            output.WriteLine($"# Size:         {execute.Files.Sum(x => x.Size).ToString(WholeNumberFormat)}");
+            output.WriteLine($"# Files:        {execute.Files.Count.ToString(WholeNumberFormat)}");
+            output.WriteLine($"# Folders:      {execute.Folders.Count.ToString(WholeNumberFormat)}");
+            if (execute.Exceptions.Count > 0)
+            {
+                output.WriteLine($"# Errors:       {execute.Exceptions.Count.ToString(WholeNumberFormat)}");
+            }
+            output.WriteLine($"# --------------------------------------------------");
 
-				// prepare for files output
-				var maxFiles = execute.Folders.Max(x => x.PatrolFiles.Count);
-				var filesFormat = GetPaddedNumberFormat(maxFiles);
-				var maxSizes = execute.Folders.Max(x => x.PatrolFiles.Sum(y => y.Size));
-				var sizesFormat = GetPaddedNumberFormat(maxSizes);
-				foreach (var folder in execute.Folders.OrderBy(x => x.Uri))
-				{
-					output.WriteLine($"# Files: {string.Format(filesFormat, folder.PatrolFiles.Count)}\tSize: {string.Format(sizesFormat, folder.TotalFileSize)}\t\t{folder.Uri}");
-				}
-				output.WriteLine($"# --------------------------------------------------");
-				output.WriteLine();
+            // prepare for files output
+            var maxFiles = execute.Folders.Max(x => x.PatrolFiles.Count);
+            var filesFormat = GetPaddedNumberFormat(maxFiles);
+            var maxSizes = execute.Folders.Max(x => x.PatrolFiles.Sum(y => y.Size));
+            var sizesFormat = GetPaddedNumberFormat(maxSizes);
+            foreach (var folder in execute.Folders.OrderBy(x => x.Uri))
+            {
+                output.WriteLine($"# Files:        {string.Format(filesFormat, folder.PatrolFiles.Count)}\tSize: {string.Format(sizesFormat, folder.TotalFileSize)}\t\t{folder.Uri}");
+            }
+            output.WriteLine($"# --------------------------------------------------");
+            output.WriteLine();
 
-                // format and write checksum to stream
-                var relativeBaseUri = PathUtils.FixUri(execute.SourceFolderUri, true);
-                foreach (var file in execute.Files.OrderBy(x => x.Uri))
-				{
-					var path = file.Uri[relativeBaseUri.Length..];
-                    output.WriteLine($"{(execute.Request.HashType == HashType.Md5 ? file.Md5 : file.Sha512)} {path}");
-				}
+            // format and write checksum to stream
+            var relativeBaseUri = PathUtils.FixUri(execute.SourceFolderUri, true);
+            foreach (var file in execute.Files.OrderBy(x => x.Uri))
+            {
+                var path = file.Uri[relativeBaseUri.Length..];
+                output.WriteLine($"{(execute.Request.HashType == HashType.Md5 ? file.Md5 : file.Sha512)} {path}");
+            }
 
-				// clean up output file
-				output.Flush();
-				output.Close();
+            // clean up output file
+            output.Flush();
+            output.Close();
 
-				// show summary
-				//_console?.WriteLine(ConsoleDivider.Pastel(color));
-				//_console?.WriteLine($"Saved {execute.Files.Count().ToString(WholeNumberFormat)} {execute.Request.HashType} file hashes".Pastel(color));
-				//_console?.WriteLine(ConsoleDivider.Pastel(color));
-			}
-		}
+            // show summary
+            //_console?.WriteLine(ConsoleDivider.Pastel(color));
+            //_console?.WriteLine($"Saved {execute.Files.Count().ToString(WholeNumberFormat)} {execute.Request.HashType} file hashes".Pastel(color));
+            //_console?.WriteLine(ConsoleDivider.Pastel(color));
+        }
 
 		private void Report(CreatePatrolReview review)
         {
@@ -444,20 +454,17 @@ namespace Fortress.Core.Actions
 
 			var color = Color.Violet;
             //_console?.WriteLine(ConsoleSection.Pastel(color));
-            _console?.WriteLine($"Report: {execute.ReportFileUri}".Pastel(color));
+            _console?.WriteLine($"Report:         {execute.ReportFileUri}".Pastel(color));
 
-            // set up reporting
-            using (var report = new BuildReport())
-            {
-                // format and write checksum to stream
-                report.PopulateSource(review.Source);
-                report.PopulateFolders(execute.Folders.OrderBy(static x => x.Uri));
-                report.PopulateFiles(execute.Files.OrderBy(static x => x.Uri));
+            // format and write checksum to stream
+            using var report = new BuildReport();
+            report.PopulateSource(review.Source);
+            report.PopulateFolders(execute.Folders.OrderBy(static x => x.Uri));
+            report.PopulateFiles(execute.Files.OrderBy(static x => x.Uri));
 
-                // close out report
-                report.SaveAs(execute.ReportFileUri);
-                report.Dispose();
-            }
+            // close out report
+            report.SaveAs(execute.ReportFileUri);
+            report.Dispose();
 
             // show summary
             //_console?.WriteLine(ConsoleDivider.Pastel(color));
