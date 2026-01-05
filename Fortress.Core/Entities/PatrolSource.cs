@@ -2,7 +2,7 @@
 
 public enum PatrolType { Unknown, FileSystem, PatrolSource }
 
-public class PatrolSource
+public record PatrolSource
 {
 	public Guid Guid { get; private set; }
 	public PatrolType PatrolType { get; set; } = PatrolType.Unknown;
@@ -24,15 +24,15 @@ public class PatrolSource
 	{
 		Guid = Guid.NewGuid();
 		RootFolder = new PatrolFolder(uri);
-		AllFolders = folders ?? new List<PatrolFolder>();
-		AllFiles = files ?? new List<PatrolFile>();
+		AllFolders = folders ?? [];
+		AllFiles = files ?? [];
 	}
 
 	public PatrolSource(PatrolFolder root, List<PatrolFolder>? folders = null, List<PatrolFile>? files = null)
 	{
 		Guid = Guid.NewGuid();
 		RootFolder = root;
-		AllFolders = folders ?? new List<PatrolFolder>();
-		AllFiles = files ?? new List<PatrolFile>();
+		AllFolders = folders ?? [];
+		AllFiles = files ?? [];
 	}
 }
