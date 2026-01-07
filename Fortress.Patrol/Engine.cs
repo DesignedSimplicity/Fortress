@@ -56,7 +56,7 @@ namespace Fortress.Patrol
             {
 				if (c.Background)
 				{
-					Console.WriteLine($"Start:\t {DateTime.Now}");
+					Console.WriteLine($"Start:          {DateTime.Now}");
 				}
 
                 var execute = createPatrol.Prepare(request);
@@ -65,8 +65,8 @@ namespace Fortress.Patrol
 
                 if (c.Background)
                 {
-                    Console.WriteLine($"Done:\t {DateTime.Now}");
-                    Console.WriteLine($"Time:\t {review.FinishUtc - execute.StartUtc}");
+                    Console.WriteLine($"Done:           {DateTime.Now}");
+                    Console.WriteLine($"Time:           {review.FinishUtc - execute.StartUtc}");
                 }
             }
             catch (Exception ex)
