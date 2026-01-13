@@ -1,6 +1,6 @@
 ﻿namespace Fortress.Core.Entities;
 
-public class PatrolFile
+public record PatrolFile
 {
 	public Guid Guid { get; set; }
 	public FileInfo? File { get; set; }
@@ -88,7 +88,7 @@ public enum FileStatus
 	Verified = 9,
 }
 
-public class PatrolFileState
+public record PatrolFileState
 {
 	public PatrolFile File { get; set; }
 	public Guid StateId { get; set; } = Guid.NewGuid();

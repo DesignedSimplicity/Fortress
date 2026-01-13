@@ -9,9 +9,9 @@ public delegate void FolderStateChange(PatrolFolderState state);
 
 public class QueryFolders
 {
-	private readonly static string[] _excludedRoots = { "system volume information", "$recycle.bin" };
+	private readonly static string[] _excludedRoots = ["system volume information", "$recycle.bin"];
 
-	public List<Exception> Exceptions = new();
+	public List<Exception> Exceptions = [];
 	private readonly IProgress<PatrolFolderState>? _progress;
 	private readonly FolderStateChange? _change;
 	private readonly FolderNotify? _notify;
@@ -49,7 +49,7 @@ public class QueryFolders
 	{
 		_output?.WriteLine($"LoadFolder: {uri}");
 		var dir = new DirectoryInfo(uri);
-		AssertPathTooLongException(dir.FullName);
+		//AssertPathTooLongException(dir.FullName);
 
 		var folder = new PatrolFolder(dir);
 		var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);			
@@ -67,18 +67,18 @@ public class QueryFolders
 	{
 		_output?.WriteLine($"LoadFolders: {uri}");
 		var start = new DirectoryInfo(uri);
-		AssertPathTooLongException(start.FullName);
+        //AssertPathTooLongException(start.FullName);
 
-		var list = new List<PatrolFolder>();
+        var list = new List<PatrolFolder>();
 		foreach (var dir in start.EnumerateDirectories("*", new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = !_stopOnError, RecurseSubdirectories = false }))
 		{
 			// skip this horrible folder
 			if (AssertPathExcludedRoot(dir)) continue;
 
 			_output?.WriteLine($"LoadFolder: {dir.FullName}");
-			AssertPathTooLongException(dir.FullName);
+            //AssertPathTooLongException(dir.FullName);
 
-			var folder = new PatrolFolder(dir);
+            var folder = new PatrolFolder(dir);
 			var state = new PatrolFolderState(folder, PatrolFolderStatus.Exists);
 			list.Add(folder);
 
@@ -105,20 +105,21 @@ public class QueryFolders
 	{
 		_output?.WriteLine($"LoadAllFolders: {uri}");
 		var start = new DirectoryInfo(uri);
-		AssertPathTooLongException(start.FullName);
+        //AssertPathTooLongException(start.FullName);
 
-		var list = new List<PatrolFolder>();			
-		Queue<string> dirs = new Queue<string>();
-		dirs.Enqueue(start.FullName);
+        var list = new List<PatrolFolder>();
+		var dirs = new Queue<string>();
+
+        dirs.Enqueue(start.FullName);
 		
-		while (dirs.Any())
+		while (dirs.Count > 0)
 		{
 			var d = dirs.Dequeue();
 			_output?.WriteLine($"LoadFolder: {d}");
-			AssertPathTooLongException(d);
+            //AssertPathTooLongException(d);
 
-			// skip this horrible folder
-			var dir = new DirectoryInfo(d);
+            // skip this horrible folder
+            var dir = new DirectoryInfo(d);
 			if (AssertPathExcludedRoot(dir)) continue;
 
 			var folder = new PatrolFolder(d);
@@ -126,7 +127,7 @@ public class QueryFolders
 			list.Add(folder);
 			
 			// cancellation returns empty list
-			if (token?.IsCancellationRequested ?? false) return new List<PatrolFolder>();
+			if (token?.IsCancellationRequested ?? false) return [];
 
 			_notify?.Invoke(folder);
 			_change?.Invoke(state);
@@ -145,7 +146,7 @@ public class QueryFolders
 
 	private bool AssertPathExcludedRoot(DirectoryInfo dir)
 	{
-		return ((dir.Parent?.Name ?? "").EndsWith(@":\") && _excludedRoots.Contains(dir.Name.ToLowerInvariant()));
+		return (dir.Parent?.Name ?? "").EndsWith(@":\") && _excludedRoots.Contains(dir.Name.ToLowerInvariant());
 	}
 
 	private bool AssertPathTooLongException(string uri)
