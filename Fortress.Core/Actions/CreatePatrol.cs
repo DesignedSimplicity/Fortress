@@ -67,7 +67,7 @@ namespace Fortress.Core.Actions
             {
                 // load current folder
                 var folder = queue.Dequeue();
-                _console?.Write(folder.Uri.Pastel(Color.Goldenrod));
+                _console?.Write(PathUtils.FixUri(folder.Uri, true).Pastel(Color.Goldenrod));
 
                 // load subfolders
                 var folders = queryFolders.LoadFolders(folder.Uri);
@@ -212,12 +212,21 @@ namespace Fortress.Core.Actions
             // prepare totals
             var fileIndex = 0;
             var fileCount = execute.Files.Count;
+            var folderCount = 0;
+            var folderTotalCount = execute.Folders.Count;
+            var bytesProcessed = 0L;
+            var bytesTotal = execute.Files.Sum(x => x.Size);
             foreach (var folder in execute.Folders.OrderBy(x => x.Uri))
             {
-                var anyFiles = folder.PatrolFiles.Count > 0;
+                folderCount++;
+                var anyFiles = folder.PatrolFiles.Count > 0;                
 
                 if (verbose)
-                    _console?.WriteLine($"Folder: {folder.Uri}".Pastel(anyFiles ? Color.Goldenrod : Color.DarkGoldenrod));
+                {
+                    _console?.Write($"[{folderCount.ToString(WholeNumberFormat)} of {folderTotalCount.ToString(WholeNumberFormat)}] ".Pastel(Color.Orange));
+                    _console?.Write($"{folder.Uri} -> ".Pastel(anyFiles ? Color.Goldenrod : Color.DarkGoldenrod));
+                    _console?.WriteLine($"{folder.PatrolFiles.Sum(x => x.Size).ToString(WholeNumberFormat)}".Pastel(Color.LightYellow));
+                }
                 else
                     _console?.Write("*".Pastel(Color.Goldenrod));
 
@@ -228,6 +237,7 @@ namespace Fortress.Core.Actions
                     foreach (var file in folder.PatrolFiles.OrderBy(x => x.Name))
                     {
                         fileIndex++;
+                        bytesProcessed += file.Size;
 
                         if (verbose)
                         {
@@ -275,7 +285,13 @@ namespace Fortress.Core.Actions
                         }
                     }
 
-                    if (verbose) _console?.WriteLine(ConsoleDivider.Pastel(Color.Goldenrod));
+                    if (verbose)
+                    {
+                        var percentComplete = 100.0 * bytesProcessed / bytesTotal;
+                        _console?.WriteLine(ConsoleDivider.Pastel(Color.Gray));
+                        _console?.WriteLine($"{percentComplete:#0.0}% Complete {ProgressBar.Build(percentComplete)} {(bytesProcessed / 1024):###,###,###,###,##0} of {(bytesTotal / 1024):###,###,###,###,##0} MB".Pastel(Color.LightYellow));
+                        _console?.WriteLine(ConsoleDivider.Pastel(Color.Goldenrod));
+                    }
                 }
             }
             _console?.WriteLine();

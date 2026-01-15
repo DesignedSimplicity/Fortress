@@ -1,7 +1,4 @@
 ﻿using CommandLine;
-using Fortress.Core.Services;
-using Pastel;
-using System.Drawing;
 
 namespace Fortress.Patrol
 {
@@ -20,7 +17,7 @@ namespace Fortress.Patrol
 
 			var engine = new Engine();
 
-			//args = new string[]  { "create", "-d", @"N:\_TEST", "-rv", "-ex" };			
+			args = new string[]  { "create", "-d", @"C:\Kevin\2025", "-rv", "-ex" };			
 			//args = new string[] { "create", "--d", @"\\Blaze\Backup\Backup" };
 
 			var result = parser.ParseArguments<CreateOptions, VerifyOptions>(args)
