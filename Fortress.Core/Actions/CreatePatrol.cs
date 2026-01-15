@@ -220,7 +220,7 @@ namespace Fortress.Core.Actions
             foreach (var folder in execute.Folders.OrderBy(x => x.Uri))
             {
                 folderCount++;
-                var anyFiles = folder.PatrolFiles.Count > 0;                
+                var anyFiles = folder.PatrolFiles.Count > 0;
 
                 if (verbose)
                 {

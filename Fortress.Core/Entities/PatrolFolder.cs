@@ -22,7 +22,7 @@ public record PatrolFolder
 
 	public PatrolFolder(DirectoryInfo dir)
 	{
-		Guid = Guid.NewGuid();
+		Guid = Guid.CreateVersion7();
 		Uri = dir.FullName;
 		Name = dir.Name;
 		Directory = dir;
@@ -68,7 +68,7 @@ public enum PatrolFolderStatus
 public record PatrolFolderState
 {
 	public PatrolFolder Folder { get; set; }
-	public Guid StateId { get; set; } = Guid.NewGuid();
+	public Guid StateId { get; set; } = Guid.CreateVersion7();
 	public PatrolFolderStatus Status { get; set; } = PatrolFolderStatus.Default;
 	public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 	public string Message { get; set; } = string.Empty;

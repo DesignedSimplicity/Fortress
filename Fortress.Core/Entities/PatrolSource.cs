@@ -22,7 +22,7 @@ public record PatrolSource
 
 	public PatrolSource(string uri, List<PatrolFolder>? folders = null, List<PatrolFile>? files = null)
 	{
-		Guid = Guid.NewGuid();
+		Guid = Guid.CreateVersion7();
 		RootFolder = new PatrolFolder(uri);
 		AllFolders = folders ?? [];
 		AllFiles = files ?? [];
@@ -30,7 +30,7 @@ public record PatrolSource
 
 	public PatrolSource(PatrolFolder root, List<PatrolFolder>? folders = null, List<PatrolFile>? files = null)
 	{
-		Guid = Guid.NewGuid();
+		Guid = Guid.CreateVersion7();
 		RootFolder = root;
 		AllFolders = folders ?? [];
 		AllFiles = files ?? [];
