@@ -216,6 +216,7 @@ namespace Fortress.Core.Actions
             var folderTotalCount = execute.Folders.Count;
             var bytesProcessed = 0L;
             var bytesTotal = execute.Files.Sum(x => x.Size);
+            var percentCompleteProgress = 0;
             foreach (var folder in execute.Folders.OrderBy(x => x.Uri))
             {
                 folderCount++;
@@ -285,12 +286,20 @@ namespace Fortress.Core.Actions
                         }
                     }
 
+                    var percentComplete = 100.0 * bytesProcessed / bytesTotal;
                     if (verbose)
                     {
-                        var percentComplete = 100.0 * bytesProcessed / bytesTotal;
                         _console?.WriteLine(ConsoleDivider.Pastel(Color.Gray));
                         _console?.WriteLine($"{percentComplete:#0.0}% Complete {ProgressBar.Build(percentComplete)} {(bytesProcessed / 1024):###,###,###,###,##0} of {(bytesTotal / 1024):###,###,###,###,##0} MB".Pastel(Color.LightYellow));
                         _console?.WriteLine(ConsoleDivider.Pastel(Color.Goldenrod));
+                    }
+                    else
+                    {
+                        if (percentCompleteProgress != Convert.ToInt32(percentComplete * 10))
+                        {
+                            _console?.Write($"[{percentComplete:#0.0}%]".Pastel(Color.LightYellow));
+                            percentCompleteProgress = Convert.ToInt32(percentComplete * 10);
+                        }
                     }
                 }
             }

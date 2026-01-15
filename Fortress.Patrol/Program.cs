@@ -17,10 +17,10 @@ namespace Fortress.Patrol
 
 			var engine = new Engine();
 
-			args = new string[]  { "create", "-d", @"C:\Kevin\2025", "-rv", "-ex" };			
-			//args = new string[] { "create", "--d", @"\\Blaze\Backup\Backup" };
+            //args = new string[]  { "create", "-d", @"C:\Kevin\2025", "-rv", "-ex" };			
+            //args = new string[] { "create", "--d", @"\\Blaze\Backup\Backup" };
 
-			var result = parser.ParseArguments<CreateOptions, VerifyOptions>(args)
+            var result = parser.ParseArguments<CreateOptions, VerifyOptions>(args)
 				.WithParsed<CreateOptions>(x => engine.Create(x))
 				.WithParsed<VerifyOptions>(x => engine.Verify(x));
 
