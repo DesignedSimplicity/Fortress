@@ -1,8 +1,4 @@
-﻿//TODO:
-//Better exception reporting - add to Review section - test all instances - add to excel file
-//Simple vs verbose logging
-
-using Fortress.Core.Actions.Messages;
+﻿using Fortress.Core.Actions.Messages;
 using Fortress.Core.Common;
 using Fortress.Core.Entities;
 using Fortress.Core.Services;
