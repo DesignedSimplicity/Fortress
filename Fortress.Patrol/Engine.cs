@@ -15,21 +15,24 @@ namespace Fortress.Patrol
 		public void Create(CreateOptions c)
 		{
 			Console.WriteLine($"Create");
-			Console.WriteLine($"Name:\t {c.NamePrefix}");
-			Console.WriteLine($"Uri:\t {c.DirectoryUri}");
-			Console.WriteLine($"Search:\t {c.SearchFilter}");
-			Console.WriteLine($"Hash:\t {c.HashType}");
-			Console.WriteLine($"Report:\t {c.CreateReport}");
-			Console.WriteLine($"Index:\t {c.IndexOnly}");
-			Console.WriteLine($"Error:\t {c.StopOnError}");
-			Console.WriteLine($"Flat:\t {c.FlatFolder}");
-			Console.WriteLine($"Log:\t {c.LogOutput}");
-			Console.WriteLine($"Verbose: {c.VerboseLog}");
+			Console.WriteLine($"Name Prefix:    {c.NamePrefix}");
+			Console.WriteLine($"Directory Uri:  {c.DirectoryUri}");
+			Console.WriteLine($"Search Filter:  {c.SearchFilter}");
+			Console.WriteLine($"Hash Type:      {c.HashType}");
+            Console.WriteLine();
+            Console.WriteLine($"Create Report:  {c.CreateReport}");
+			Console.WriteLine($"Index Only:     {c.IndexOnly}");
+			Console.WriteLine($"Stop On Error:  {c.StopOnError}");
+			Console.WriteLine($"Flat Folder:    {c.FlatFolder}");
+			Console.WriteLine($"Log Output:     {c.LogOutput}");
+			Console.WriteLine($"Verbose Log     {c.VerboseLog}");
+			Console.WriteLine();
+            Console.WriteLine("Load directory...");
+            Console.Out.Flush();
+            //Console.SetWindowSize(200, 50);
 
-			//Console.SetWindowSize(200, 50);
-
-			// validate
-			var request = new CreatePatrolRequest()
+            // validate
+            var request = new CreatePatrolRequest()
 			{
 				// common
 				NamePrefix = c.NamePrefix,
@@ -47,34 +50,36 @@ namespace Fortress.Patrol
 				HashType = c.HashType,
 			};
 
-			using (var createPatrol = new CreatePatrol(c.Background ? null : Console.Out))
-			{
-				try
+            using var createPatrol = new CreatePatrol(c.Background ? null : Console.Out);
+            
+			try
+            {
+				if (c.Background)
 				{
-					if (c.Background) Console.WriteLine($"Start:\t {DateTime.Now}");
+					Console.WriteLine($"Start:          {DateTime.Now}");
+				}
 
-					var execute = createPatrol.Prepare(request);
-					var review = createPatrol.Execute(execute);
-					createPatrol.Review(review);
+                var execute = createPatrol.Prepare(request);
+                var review = createPatrol.Execute(execute);
+                createPatrol.Review(review);
 
-					if (c.Background)
-					{
-						Console.WriteLine($"Done:\t {DateTime.Now}");
-						Console.WriteLine($"Time:\t {review.FinishUtc - execute.StartUtc}");
-					}
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine("");
-					Console.WriteLine("####################################################################################################".Pastel(Color.Red));
-					Console.WriteLine($"EXCEPTION: {ex.Message}".Pastel(Color.Red));
-					Console.WriteLine(ex.ToString().Pastel(Color.DarkRed));
-				}
-				finally
-				{
-					createPatrol.Finish();
-				}
-			}
-		}
+                if (c.Background)
+                {
+                    Console.WriteLine($"Done:           {DateTime.Now}");
+                    Console.WriteLine($"Time:           {review.FinishUtc - execute.StartUtc}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("");
+                Console.WriteLine("####################################################################################################".Pastel(Color.Red));
+                Console.WriteLine($"EXCEPTION: {ex.Message}".Pastel(Color.Red));
+                Console.WriteLine(ex.ToString().Pastel(Color.DarkRed));
+            }
+            finally
+            {
+                createPatrol.Finish();
+            }
+        }
 	}
 }

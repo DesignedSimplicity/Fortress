@@ -1,10 +1,14 @@
 # Fortress
 
+Repository: https://github.com/DesignedSimplicity
+Project: https://github.com/users/DesignedSimplicity/projects/4
+Issues: https://github.com/DesignedSimplicity/Fortress/issues
+
 ## Patrol
 
 ### Create MD5 hash file
 ### Verify MD5 hash file
-### Output Xlsx report file
+### Output XLSX report file
 
 ```
 patrol create							Creates an md5 hash file named {DriveLetter|DirectoryName}_YYYYMMDD-HHMMSS.md5 recurisvelly for all files starting in current directory

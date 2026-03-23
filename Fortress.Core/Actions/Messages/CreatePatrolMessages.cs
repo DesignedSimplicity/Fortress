@@ -23,8 +23,8 @@ public class CreatePatrolExecute : BaseExecute
 	public string SystemName { get; set; } = string.Empty;
 	public string SourceFolderUri { get; set; } = string.Empty;
 
-	public List<PatrolFolder> Folders { get; set; } = new();
-	public List<PatrolFile> Files { get; set; } = new();
+	public List<PatrolFolder> Folders { get; set; } = [];
+	public List<PatrolFile> Files { get; set; } = [];
 
 	public CreatePatrolExecute(CreatePatrolRequest request)
 	{

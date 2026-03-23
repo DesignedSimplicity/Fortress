@@ -2,7 +2,7 @@
 
 namespace Fortress.Core.Entities;
 
-public class PatrolFolder
+public record PatrolFolder
 {
 	public DirectoryInfo? Directory { get; set; }
 
@@ -15,14 +15,14 @@ public class PatrolFolder
 	public DateTime? DeclaredUTC { get; set; }
 	public DateTime? VerifiedUTC { get; set; }
 
-	public List<PatrolFolder> PatrolFolders { get; set; } = new List<PatrolFolder>();
-	public List<PatrolFile> PatrolFiles { get; set; } = new List<PatrolFile>();
+	public List<PatrolFolder> PatrolFolders { get; set; } = [];
+	public List<PatrolFile> PatrolFiles { get; set; } = [];
 
 	public long TotalFileSize => PatrolFiles.Sum(x => x.Size);
 
 	public PatrolFolder(DirectoryInfo dir)
 	{
-		Guid = Guid.NewGuid();
+		Guid = Guid.CreateVersion7();
 		Uri = dir.FullName;
 		Name = dir.Name;
 		Directory = dir;
@@ -65,10 +65,10 @@ public enum PatrolFolderStatus
 	Verified = 9,
 }
 
-public class PatrolFolderState
+public record PatrolFolderState
 {
 	public PatrolFolder Folder { get; set; }
-	public Guid StateId { get; set; } = Guid.NewGuid();
+	public Guid StateId { get; set; } = Guid.CreateVersion7();
 	public PatrolFolderStatus Status { get; set; } = PatrolFolderStatus.Default;
 	public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 	public string Message { get; set; } = string.Empty;

@@ -11,7 +11,7 @@ namespace Fortress.Tests.Parse
 			var uri1 = @"C:";
 			var uri2 = @"C:";
 			var same = PathUtils.HasSameRoot(uri1, uri2);
-			Assert.IsTrue(same);
+			Assert.That(same);
 		}
 
 		[Test]
@@ -20,7 +20,7 @@ namespace Fortress.Tests.Parse
 			var uri1 = @"C:\";
 			var uri2 = @"C:";
 			var same = PathUtils.HasSameRoot(uri1, uri2);
-			Assert.IsTrue(same);
+			Assert.That(same);
 		}
 
 		[Test]
@@ -29,7 +29,7 @@ namespace Fortress.Tests.Parse
 			var uri1 = @"C:";
 			var uri2 = @"C:\";
 			var same = PathUtils.HasSameRoot(uri1, uri2);
-			Assert.IsTrue(same);
+			Assert.That(same);
 		}
 
 		[Test]
@@ -38,7 +38,7 @@ namespace Fortress.Tests.Parse
 			var uri1 = @"C:\";
 			var uri2 = @"C:\";
 			var same = PathUtils.HasSameRoot(uri1, uri2);
-			Assert.IsTrue(same);
+			Assert.That(same);
 		}
 
 		[Test]
@@ -47,7 +47,7 @@ namespace Fortress.Tests.Parse
 			var uri1 = @"C:\Directory1";
 			var uri2 = @"C:\";
 			var same = PathUtils.HasSameRoot(uri1, uri2);
-			Assert.IsTrue(same);
+			Assert.That(same);
 		}
 
 		[Test]
@@ -56,7 +56,7 @@ namespace Fortress.Tests.Parse
 			var uri1 = @"C:\";
 			var uri2 = @"C:\Directory2";
 			var same = PathUtils.HasSameRoot(uri1, uri2);
-			Assert.IsTrue(same);
+			Assert.That(same);
 		}
 
 		[Test]
@@ -65,7 +65,7 @@ namespace Fortress.Tests.Parse
 			var uri1 = @"C:\Directory1";
 			var uri2 = @"C:\Directory2";
 			var same = PathUtils.HasSameRoot(uri1, uri2);
-			Assert.IsTrue(same);
+			Assert.That(same);
 		}
 
 		[Test]
@@ -74,7 +74,7 @@ namespace Fortress.Tests.Parse
 			var uri1 = @"C:\Directory1\Subdirectory";
 			var uri2 = @"C:\Directory2\Subdirectory";
 			var same = PathUtils.HasSameRoot(uri1, uri2);
-			Assert.IsTrue(same);
+			Assert.That(same);
 		}
 
 		[Test]

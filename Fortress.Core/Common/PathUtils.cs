@@ -6,6 +6,7 @@ public class PathUtils
     private const char _slashChar = '\\';
     private const string _slashString = @"\";
     private const string _slashDouble = @"\\";
+    private const string _slashUncPath = @"\\?\";
 
     public static bool IsMaxPath(string? uri)
     {
@@ -29,7 +30,7 @@ public class PathUtils
 
         return true;
     }
-
+    
     /// <summary>
     /// Fixes instances of \\ which occure past the start of the uri and optionally adds or removes the trailing \
     /// </summary>
@@ -51,7 +52,13 @@ public class PathUtils
     public static bool IsNetworkPath(string uri)
     {
         if (string.IsNullOrWhiteSpace(uri) || uri.Length < 3) return false;
-        return uri.StartsWith(_slashDouble);
+        return uri.StartsWith(_slashDouble) && !uri.StartsWith(_slashUncPath);
+    }
+
+    public static bool IsUncLocalPath(string uri)
+    {
+        if (string.IsNullOrWhiteSpace(uri) || uri.Length < 8) return false;
+        return uri.StartsWith(_slashUncPath) && char.IsLetter(uri[4]) && uri[5] == ':';
     }
 
     public static string GetParentName(string uri)

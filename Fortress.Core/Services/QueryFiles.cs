@@ -62,7 +62,7 @@ public class QueryFiles
 		foreach (var f in dir.GetFiles(String.IsNullOrWhiteSpace(filter) ? string.Empty : filter, new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = !_stopOnError, RecurseSubdirectories = recursive, MatchType = MatchType.Win32 }))
 		{
 			_output?.WriteLine($"LoadFile: {f.FullName}");
-			AssertPathTooLongException(f.FullName);
+			//AssertPathTooLongException(f.FullName);
 
 			// cancellation returns empty list
 			if (token?.IsCancellationRequested ?? false) return new List<PatrolFile>();
